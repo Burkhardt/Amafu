@@ -1,0 +1,170 @@
+name: Publish Amafu
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Validate coordinated version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PROJECT_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" amafu/amafu.csproj)
+          SOURCE_VERSION=$(grep -oPm1 '(?<=Current = ")[^"]+' amafu/VersionInfo.cs)
+          test "${TAG_VERSION}" = "${PROJECT_VERSION}"
+          test "${TAG_VERSION}" = "${SOURCE_VERSION}"
+
+      - name: Restore
+        run: dotnet restore Amafu.slnx
+
+      - name: Build
+        run: dotnet build Amafu.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test amafu.Tests/amafu.Tests.csproj --configuration Release --no-build --no-restore
+
+      - name: Pack
+        run: dotnet pack amafu/amafu.csproj --configuration Release --no-build
+
+      - name: NuGet login (Trusted Publishing)
+        uses: NuGet/login@v1
+        id: nuget_login
+        with:
+          user: Burkhardt
+
+      - name: Publish to NuGet
+        run: |
+          dotnet nuget push "artifacts/nuget/*.nupkg" \
+            --api-key "${{ steps.nuget_login.outputs.NUGET_API_KEY }}" \
+            --source "https://api.nuget.org/v3/index.json" \
+            --skip-duplicate
+
+  build-native:
+    name: NativeAOT ${{ matrix.rid }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: osx-arm64
+            runner: macos-15
+            binary: amafu
+          - rid: osx-x64
+            runner: macos-15-intel
+            binary: amafu
+          - rid: linux-x64
+            runner: ubuntu-24.04
+            binary: amafu
+          - rid: linux-arm64
+            runner: ubuntu-24.04-arm
+            binary: amafu
+          - rid: win-x64
+            runner: windows-2025
+            binary: amafu.exe
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish NativeAOT executable
+        shell: pwsh
+        run: |
+          dotnet publish amafu/amafu.csproj `
+            --configuration Release `
+            --runtime "${{ matrix.rid }}" `
+            --self-contained true `
+            --output "artifacts/native/${{ matrix.rid }}"
+
+      - name: Verify standalone artifact and size budget
+        shell: pwsh
+        run: |
+          $binary = "artifacts/native/${{ matrix.rid }}/${{ matrix.binary }}"
+          & $binary --version
+          & $binary --help
+          $bytes = (Get-Item $binary).Length
+          "${{ matrix.rid }} native executable: $bytes bytes"
+          if ($bytes -gt 5242880) {
+            throw "Native executable exceeds the approved 5 MiB size target."
+          }
+
+      - name: Archive and checksum native artifact
+        shell: pwsh
+        run: |
+          $rid = "${{ matrix.rid }}"
+          $tag = if ("${{ github.ref_name }}") { "${{ github.ref_name }}" } else { "manual" }
+          $archive = "amafu-$tag-$rid.zip"
+          $binary = "artifacts/native/$rid/${{ matrix.binary }}"
+          New-Item -ItemType Directory -Force -Path artifacts/release | Out-Null
+          Compress-Archive -Path $binary -DestinationPath "artifacts/release/$archive"
+          $hash = (Get-FileHash "artifacts/release/$archive" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $archive" | Set-Content -NoNewline "artifacts/release/$archive.sha256"
+
+      - name: Upload native workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: amafu-${{ matrix.rid }}
+          path: artifacts/release/amafu-*
+
+  publish-native-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: build-native
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Download native artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/release
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          NOTES="Amafu_RELEASE_NOTES_${VERSION}.md"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            TITLE=$(gh release view "${TAG}" --json name --jq '.name')
+            test "${TITLE}" = "Amafu ${TAG}"
+          else
+            gh release create "${TAG}" --title "Amafu ${TAG}" --notes-file "${NOTES}"
+          fi
+
+      - name: Upload native release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          find artifacts/release -type f \( -name '*.zip' -o -name '*.sha256' \) -print0 \
+            | xargs -0 -I {} gh release upload "${GITHUB_REF_NAME}" "{}" --clobber

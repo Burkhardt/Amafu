@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="amafu.Tests/amafu.Tests.csproj" />
+  <Project Path="amafu/amafu.csproj" />
+</Solution>

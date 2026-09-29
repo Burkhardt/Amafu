@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>Amafu</Title>
+		<Description>Standalone cloud-storage discovery and RAIkeep configuration bootstrap CLI.</Description>
+		<Version>4.4.4</Version>
+		<PackageId>Amafu</PackageId>
+		<Authors>Rainer Burkhardt</Authors>
+		<Copyright>© Rainer Burkhardt</Copyright>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>HardCastle.png</PackageIcon>
+		<PackageProjectUrl>https://github.com/Burkhardt/Amafu</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Burkhardt/Amafu.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<PackageReleaseNotes>4.4.4 implements accepted CR044 with standalone cloud detection and RAIkeep configuration initialization.</PackageReleaseNotes>
+		<PackageTags>raikeep;cloud;configuration;cli;tool;nativeaot</PackageTags>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>true</IsPackable>
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>amafu</ToolCommandName>
+		<PackageOutputPath>../artifacts/nuget</PackageOutputPath>
+		<PublishAot>true</PublishAot>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<StripSymbols>true</StripSymbols>
+		<OptimizationPreference>Size</OptimizationPreference>
+		<DebuggerSupport>false</DebuggerSupport>
+		<EventSourceSupport>false</EventSourceSupport>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../README.md" Pack="true" PackagePath="\" Link="README.md" />
+		<None Include="../HardCastle.png" Pack="true" PackagePath="\" Link="HardCastle.png" />
+	</ItemGroup>
+
+</Project>
