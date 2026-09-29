@@ -19,6 +19,9 @@ It implements the accepted provider amendment in
 - Provides the aligned RAIkeep Nerd Font help experience.
 - Publishes a NuGet global tool and self-contained NativeAOT artifacts for macOS,
   Linux, and Windows with SHA-256 checksums.
+- Automatic provider discovery is supported and tested only on macOS in 4.4.4.
+  Linux and Windows binaries expose the command and starter-template fallback;
+  provider-specific discovery on those systems is future work.
 - Remains free of RAIkeep and third-party runtime dependencies.
 
 Preparation stops before tagging and publication for RAI's manual synchronized

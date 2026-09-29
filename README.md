@@ -20,11 +20,55 @@ its adjacent SHA-256 checksum, extract `amafu` (`amafu.exe` on Windows), and put
 it on your `PATH`. These NativeAOT executables do not require .NET to be
 installed.
 
+On macOS or Linux, this installs the zero-dependency native executable into
+`/usr/local/bin`. To update, run the same block with the newer version number;
+`install` replaces the existing executable. Because `/usr/local/bin` is already
+on the standard shell path, no `$PATH` change and no later copy step are needed:
+
+```bash
+AMAFU_VERSION=4.4.4
+case "$(uname -s)-$(uname -m)" in
+  Darwin-arm64) AMAFU_RID=osx-arm64 ;;
+  Darwin-x86_64) AMAFU_RID=osx-x64 ;;
+  Linux-aarch64|Linux-arm64) AMAFU_RID=linux-arm64 ;;
+  Linux-x86_64) AMAFU_RID=linux-x64 ;;
+  *) echo "Unsupported Amafu platform: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
+esac
+AMAFU_INSTALL_DIR="$(mktemp -d)"
+AMAFU_ARCHIVE="amafu-v${AMAFU_VERSION}-${AMAFU_RID}.zip"
+curl --fail --location \
+  "https://github.com/Burkhardt/Amafu/releases/download/v${AMAFU_VERSION}/${AMAFU_ARCHIVE}" \
+  --output "${AMAFU_INSTALL_DIR}/${AMAFU_ARCHIVE}"
+curl --fail --location \
+  "https://github.com/Burkhardt/Amafu/releases/download/v${AMAFU_VERSION}/${AMAFU_ARCHIVE}.sha256" \
+  --output "${AMAFU_INSTALL_DIR}/${AMAFU_ARCHIVE}.sha256"
+if command -v sha256sum >/dev/null 2>&1; then
+  (cd "${AMAFU_INSTALL_DIR}" && sha256sum --check "${AMAFU_ARCHIVE}.sha256")
+else
+  (cd "${AMAFU_INSTALL_DIR}" && shasum -a 256 --check "${AMAFU_ARCHIVE}.sha256")
+fi
+unzip -q "${AMAFU_INSTALL_DIR}/${AMAFU_ARCHIVE}" -d "${AMAFU_INSTALL_DIR}"
+sudo install -m 0755 "${AMAFU_INSTALL_DIR}/amafu" /usr/local/bin/amafu
+amafu --version
+```
+
+`sudo` is used only by the OS installation command that writes
+`/usr/local/bin`; never run `sudo amafu init`.
+
 Published targets:
 
 - macOS ARM64 and x64;
 - Linux ARM64 and x64;
 - Windows x64.
+
+## Platform support in 4.4.4
+
+Automatic cloud-provider discovery is supported and tested on **macOS only** in
+this release. The Linux and Windows binaries are provided so the native command,
+help, diagnostics, and starter-template fallback are available without a .NET
+runtime, but provider-specific discovery on those operating systems is not yet
+implemented or claimed as supported. Linux and Windows detection will be added
+and tested in a later release.
 
 ### .NET global tool
 
@@ -41,6 +85,28 @@ dotnet tool update --global Amafu --version 4.4.4
 ```
 
 Both installations expose the same `amafu` command.
+
+To install the NuGet tool into the shared `/usr/local/bin` tool directory:
+
+```bash
+sudo dotnet tool install Amafu \
+  --tool-path /usr/local/bin \
+  --version 4.4.4
+```
+
+To update that installation:
+
+```bash
+sudo dotnet tool update Amafu \
+  --tool-path /usr/local/bin \
+  --version 4.4.4
+```
+
+The `--tool-path /usr/local/bin` form likewise makes `amafu` immediately
+available without adding the default per-user .NET tool directory to `$PATH` or
+copying a launcher afterward. These commands require a compatible .NET runtime
+on the target machine. Use the NativeAOT installation above when no .NET
+runtime should be required.
 
 ## Commands
 
@@ -78,6 +144,8 @@ must create an ordinary user-owned configuration.
 ## Safety boundary
 
 - Detection is read-only and never creates cloud-provider roots.
+- Provider auto-detection is supported and tested only on macOS in 4.4.4;
+  other platforms receive the explicit starter-template fallback.
 - Dry run performs zero filesystem writes.
 - An existing configuration is byte-for-byte preserved without `--force`.
 - No file or directory is staged in a temp directory and moved into cloud
@@ -100,7 +168,7 @@ must create an ordinary user-owned configuration.
 
 ## Documentation
 
-- Foldable class and method reference: [API.md](API.md)
-- Release notes: [Amafu_RELEASE_NOTES_4.4.4.md](Amafu_RELEASE_NOTES_4.4.4.md)
+- Foldable class and method reference: [API.md](https://github.com/Burkhardt/Amafu/blob/main/API.md)
+- Release notes: [Amafu_RELEASE_NOTES_4.4.4.md](https://github.com/Burkhardt/Amafu/blob/main/Amafu_RELEASE_NOTES_4.4.4.md)
 - Governing request:
   [CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR/CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md)
