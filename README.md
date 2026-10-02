@@ -1,4 +1,11 @@
 # Amafu
+
+## 4.4.8
+
+Coordinated 4.4.8 release; cloud configuration behavior is unchanged.
+
+Release notes: [Amafu_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.8.md).
+
 ## 4.4.6
 
 Participates in the synchronized 4.4.6 release; reports `amafu v4.4.6`. Cloud configuration behavior is unchanged.
