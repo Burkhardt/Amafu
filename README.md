@@ -1,4 +1,10 @@
 # Amafu
+## 4.4.6
+
+Participates in the synchronized 4.4.6 release; reports `amafu v4.4.6`. Cloud configuration behavior is unchanged.
+
+Release notes: [Amafu_RELEASE_NOTES_4.4.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.6.md).
+
 
 ![RAI logo](HardCastle.png)
 
