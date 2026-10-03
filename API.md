@@ -7,7 +7,7 @@ contracts instead of linking to bootstrap internals.
 <details>
 <summary><code>AmafuApplication</code></summary>
 
-Dispatches global flags and the `detect`, `init`, and `init-config` verbs.
+Dispatches global flags and the `detect`, `init`, `init-config`, and `reconcile` verbs.
 Returns deterministic process exit codes and resolves no global configuration.
 
 - `Run(string[] args, AmafuRuntime runtime)` — executes one invocation against
@@ -30,7 +30,10 @@ environment state.
 
 Performs read-only, deterministic cloud-root discovery. It returns confirmed
 provider roots and the paths checked during discovery. It never creates or
-hydrates a provider directory.
+hydrates a provider directory. Google and OneDrive discovery return multiple
+account-aware records. Personal OneDrive uses explicit selection, then an
+existing configured root, then longest name / highest suffix. Corporate roots
+remain independent. Name collisions fail before filesystem writes.
 
 - `Detect(AmafuRuntime runtime)` — discovers providers for the explicit runtime.
 
@@ -86,5 +89,17 @@ cloud directory.
 
 Renders the RAIkeep Nerd Font banner, aligned option table, command-specific
 help, and narrow-terminal wrapping without an external CLI framework.
+
+</details>
+
+<details>
+<summary><code>ConfigurationDocument / CloudConfigurationReconciler</code></summary>
+
+Read existing JSON5 without loading OsLib. Reconcile the Cloud and
+DefaultCloudOrder values while preserving unrelated source text. Reconciliation
+previews by default; explicit apply backs up the original, creates shortcuts,
+and replaces the configuration through a sibling file. Unknown root entries are
+preserved. Explicit personal OneDrive selection can change its verified
+configured symbolic link without changing either root's data.
 
 </details>

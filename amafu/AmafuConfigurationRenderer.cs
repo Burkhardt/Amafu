@@ -67,8 +67,12 @@ internal static class AmafuConfigurationRenderer
 				.Append(Escape(provider.Name))
 				.Append("\", \"path\": \"")
 				.Append(Escape(ToPortablePath(provider.RootPath, homeDirectory)))
-				.Append("\" }")
-				.AppendLine(suffix);
+				.Append("\"");
+			if (provider.Provider is not null)
+				builder.Append(", \"provider\": \"").Append(Escape(provider.Provider)).Append("\"");
+			if (provider.Account is not null)
+				builder.Append(", \"account\": \"").Append(Escape(provider.Account)).Append("\"");
+			builder.Append(" }").AppendLine(suffix);
 		}
 		builder.AppendLine("  ],");
 		builder.AppendLine("  \"checkedPaths\": [");

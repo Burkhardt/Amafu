@@ -1,6 +1,10 @@
 namespace Amafu;
 
-internal sealed record DetectedCloudProvider(string Name, string RootPath);
+internal sealed record DetectedCloudProvider(
+	string Name,
+	string RootPath,
+	string? Provider = null,
+	string? Account = null);
 
 internal sealed record CloudDetectionResult(
 	IReadOnlyList<DetectedCloudProvider> Providers,

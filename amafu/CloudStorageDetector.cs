@@ -2,7 +2,7 @@ namespace Amafu;
 
 internal static class CloudStorageDetector
 {
-	internal static CloudDetectionResult Detect(AmafuRuntime runtime)
+	internal static CloudDetectionResult Detect(AmafuRuntime runtime, string? personalSelection = null)
 	{
 		var providers = new List<DetectedCloudProvider>();
 		var checkedPaths = new List<string>();
@@ -12,20 +12,27 @@ internal static class CloudStorageDetector
 
 		var cloudStorage = Path.Combine(runtime.HomeDirectory, "Library", "CloudStorage");
 
-		AddFirstExisting(
-			providers,
-			checkedPaths,
-			"OneDrive",
-			ExpandCandidates(
-				[
-					Path.Combine(cloudStorage, "OneDrive"),
-					Path.Combine(cloudStorage, "OneDrive-Personal"),
-					Path.Combine(cloudStorage, "OneDrive-Personal(2)")
-				],
-				cloudStorage,
-				"OneDrive-*",
-				checkedPaths),
-			"OneDriveData");
+		var oneDriveCandidates = ExpandCandidates(
+			[Path.Combine(cloudStorage, "OneDrive"), Path.Combine(cloudStorage, "OneDrive-Personal")],
+			cloudStorage, "OneDrive-*", checkedPaths)
+			.Concat(EnumerateDirectories(cloudStorage, "OneDrive - *", checkedPaths));
+		var oneDriveRoots = DistinctPaths(oneDriveCandidates).Where(root =>
+		{
+			checkedPaths.Add(root);
+			return DirectoryExists(root);
+		}).ToArray();
+		var personalRoots = oneDriveRoots.Where(root => Path.GetFileName(root) == "OneDrive"
+			|| Path.GetFileName(root).StartsWith("OneDrive-Personal", StringComparison.Ordinal)).ToArray();
+		var personal = SelectPersonal(runtime, personalRoots, personalSelection);
+		if (personal is not null)
+			AddAccount(providers, checkedPaths, "OneDrive", personal, "OneDriveData", "OneDrive", "Personal");
+		foreach (var root in oneDriveRoots.Except(personalRoots))
+		{
+			var folder = Path.GetFileName(root);
+			var account = folder.StartsWith("OneDrive - ", StringComparison.Ordinal) ? folder[11..] : folder[9..];
+			AddAccount(providers, checkedPaths, "OneDrive" + ShortName(account, root), root,
+				"OneDriveData", "OneDrive", account);
+		}
 
 		AddFirstExisting(
 			providers,
@@ -41,19 +48,16 @@ internal static class CloudStorageDetector
 				checkedPaths),
 			"DropboxData");
 
-		var googleCandidates = new List<string>();
-		var googlePattern = Path.Combine(cloudStorage, "GoogleDrive-*");
-		checkedPaths.Add(googlePattern);
-		foreach (var root in EnumerateDirectories(cloudStorage, "GoogleDrive-*"))
-			googleCandidates.Add(Path.Combine(root, "My Drive"));
-		googleCandidates.Add(Path.Combine(cloudStorage, "GoogleDrive"));
-		googleCandidates.Add(runtime.SharedGoogleDriveCandidate);
-		AddFirstExisting(
-			providers,
-			checkedPaths,
-			"GoogleDrive",
-			googleCandidates,
-			"GDriveData");
+		// Known accounts precede generic aliases so deduplication retains account metadata.
+		foreach (var root in EnumerateDirectories(cloudStorage, "GoogleDrive-*", checkedPaths))
+		{
+			var email = Path.GetFileName(root)[12..];
+			var first = email.Split(['.', '@'])[0];
+			AddAccount(providers, checkedPaths, "GoogleDrive" + ShortName(first, root),
+				Path.Combine(root, "My Drive"), "GDriveData", "GoogleDrive", email);
+		}
+		foreach (var root in DistinctPaths([Path.Combine(cloudStorage, "GoogleDrive"), runtime.SharedGoogleDriveCandidate]))
+			AddAccount(providers, checkedPaths, "GoogleDrive", root, "GDriveData", "GoogleDrive", null);
 
 		AddFirstExisting(
 			providers,
@@ -65,7 +69,10 @@ internal static class CloudStorageDetector
 			],
 			"ICloudDriveData");
 
-		return new CloudDetectionResult(providers, DistinctPaths(checkedPaths));
+		return new CloudDetectionResult(providers
+			.OrderBy(p => p.Provider == "OneDrive" && p.Account == "Personal" ? 0 : 1)
+			.ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+			.ThenBy(p => p.RootPath, StringComparer.Ordinal).ToArray(), DistinctPaths(checkedPaths));
 	}
 
 	private static IEnumerable<string> ExpandCandidates(
@@ -76,7 +83,7 @@ internal static class CloudStorageDetector
 	{
 		var result = exactCandidates.ToList();
 		checkedPaths.Add(Path.Combine(parent, pattern));
-		result.AddRange(EnumerateDirectories(parent, pattern));
+		result.AddRange(EnumerateDirectories(parent, pattern, checkedPaths));
 		return DistinctPaths(result);
 	}
 
@@ -101,24 +108,107 @@ internal static class CloudStorageDetector
 		}
 	}
 
-	private static IEnumerable<string> EnumerateDirectories(string parent, string pattern)
+	private static IEnumerable<string> EnumerateDirectories(string parent, string pattern, ICollection<string> checkedPaths)
 	{
-		if (!Directory.Exists(parent)) return [];
+		checkedPaths.Add(Path.Combine(parent, pattern));
+		if (!DirectoryExists(parent)) return [];
 		try
 		{
-			return Directory
-				.EnumerateDirectories(parent, pattern, SearchOption.TopDirectoryOnly)
-				.Order(StringComparer.Ordinal)
-				.ToArray();
+			return Directory.EnumerateDirectories(parent, pattern, SearchOption.TopDirectoryOnly)
+				.Order(StringComparer.Ordinal).ToArray();
 		}
-		catch (IOException)
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
 		{
-			return [];
+			throw new IOException($"Cannot discover cloud accounts in '{parent}': {exception.Message}", exception);
 		}
-		catch (UnauthorizedAccessException)
+	}
+
+	private static string? SelectPersonal(AmafuRuntime runtime, string[] roots, string? selection)
+	{
+		if (selection is not null)
 		{
-			return [];
+			var requested = selection.StartsWith("~/", StringComparison.Ordinal)
+				? Path.Combine(runtime.HomeDirectory, selection[2..]) : selection;
+			var selected = roots.FirstOrDefault(root => string.Equals(Path.GetFileName(root), requested, StringComparison.Ordinal)
+				|| string.Equals(Path.TrimEndingDirectorySeparator(root), Path.TrimEndingDirectorySeparator(Path.GetFullPath(requested)), StringComparison.Ordinal));
+			return selected ?? throw new IOException($"Personal OneDrive selection '{selection}' was not detected. Candidates: {string.Join(", ", roots)}");
 		}
+		if (roots.Length == 0) return null;
+		if (File.Exists(runtime.ConfigurationFile))
+		{
+			var configured = new ConfigurationDocument(File.ReadAllText(runtime.ConfigurationFile)).CloudPaths();
+			foreach (var key in new[] { "OneDrive", "OneDrivePersonal" })
+			{
+				if (!configured.TryGetValue(key, out var path)) continue;
+				var expanded = path.StartsWith("~/", StringComparison.Ordinal) ? Path.Combine(runtime.HomeDirectory, path[2..]) : path;
+				if (!DirectoryExists(expanded)) continue;
+				var canonical = CanonicalDirectory(expanded);
+				var match = roots.FirstOrDefault(root => canonical == CanonicalDirectory(root)
+					|| canonical == CanonicalDirectory(Path.Combine(root, "OneDriveData")));
+				if (match is not null) return match;
+			}
+		}
+		return roots.OrderByDescending(root => Path.GetFileName(root).Length)
+			.ThenByDescending(root => NumericSuffix(Path.GetFileName(root)))
+			.ThenBy(root => root, StringComparer.Ordinal).FirstOrDefault();
+	}
+
+	private static long NumericSuffix(string name)
+	{
+		var match = System.Text.RegularExpressions.Regex.Match(name, @"(\d+)\)?$");
+		return match.Success && long.TryParse(match.Groups[1].Value, out var value) ? value : 0;
+	}
+
+	private static string ShortName(string text, string root)
+	{
+		var name = new string(text.Where(char.IsAsciiLetterOrDigit).ToArray());
+		if (name.Length == 0)
+			throw new IOException($"Cannot derive a cloud account name from '{root}'. The account must contain letters or digits.");
+		return char.ToUpperInvariant(name[0]) + name[1..];
+	}
+
+	private static void AddAccount(List<DetectedCloudProvider> providers, ICollection<string> checkedPaths,
+		string name, string root, string innerDirectory, string family, string? account)
+	{
+		checkedPaths.Add(root);
+		if (!DirectoryExists(root)) return;
+		var inner = Path.Combine(root, innerDirectory);
+		checkedPaths.Add(inner);
+		var target = Path.GetFullPath(DirectoryExists(inner) ? inner : root);
+		var canonical = CanonicalDirectory(target);
+		if (providers.Any(p => string.Equals(CanonicalDirectory(p.RootPath), canonical, StringComparison.Ordinal))) return;
+		var conflict = providers.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+		if (conflict is not null)
+			throw new IOException($"Cloud account name collision '{name}': '{conflict.RootPath}' (account '{conflict.Account ?? conflict.Name}') and '{target}' (account '{account ?? name}'). Distinct account names are required; nothing was written.");
+		providers.Add(new DetectedCloudProvider(name, target, family, account));
+	}
+
+	private static bool DirectoryExists(string path)
+	{
+		try { return (File.GetAttributes(path) & FileAttributes.Directory) != 0; }
+		catch (FileNotFoundException) { return false; }
+		catch (DirectoryNotFoundException) { return false; }
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+		{
+			throw new IOException($"Cannot inspect cloud directory '{path}': {exception.Message}", exception);
+		}
+	}
+
+	// Resolve parent links too (e.g. GoogleDrive -> GoogleDrive-email/My Drive).
+	internal static string CanonicalDirectory(string path, int depth = 0)
+	{
+		if (depth >= 40) throw new IOException($"Too many symbolic links in cloud directory '{path}'.");
+		var full = Path.GetFullPath(path);
+		var current = Path.GetPathRoot(full)!;
+		foreach (var component in full[current.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+		{
+			current = Path.Combine(current, component);
+			var directory = new DirectoryInfo(current);
+			if (directory.LinkTarget is not null)
+				current = CanonicalDirectory(directory.ResolveLinkTarget(returnFinalTarget: true)?.FullName
+					?? throw new IOException($"Cannot resolve cloud directory link '{current}'."), depth + 1);
+		}
+		return Path.TrimEndingDirectorySeparator(current);
 	}
 
 	private static string[] DistinctPaths(IEnumerable<string> paths)

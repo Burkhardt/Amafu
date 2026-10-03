@@ -7,7 +7,7 @@ internal static class AmafuApplication
 		var noLogo = Contains(args, "-n", "--nologo");
 		var help = Contains(args, "-h", "--help");
 		var version = Contains(args, "-v", "--version");
-		var command = args.FirstOrDefault(argument => !argument.StartsWith("-", StringComparison.Ordinal));
+		var command = Command(args);
 
 		if (version)
 		{
@@ -33,18 +33,27 @@ internal static class AmafuApplication
 			return 2;
 		}
 
-		return command.ToLowerInvariant() switch
+		try
 		{
-			"detect" => Detect(args, runtime, command),
-			"init" or "init-config" => Initialize(args, runtime, command),
-			_ => UnknownCommand(command, runtime)
-		};
+			return command.ToLowerInvariant() switch
+			{
+				"detect" => Detect(args, runtime, command),
+				"init" or "init-config" => Initialize(args, runtime, command),
+				"reconcile" => Reconcile(args, runtime, command),
+				_ => UnknownCommand(command, runtime)
+			};
+		}
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+		{
+			runtime.Error.WriteLine($"Cloud setup failed: {exception.Message}");
+			return 4;
+		}
 	}
 
 	private static int Detect(string[] args, AmafuRuntime runtime, string command)
 	{
-		if (!ValidateOptions(args, command, ["-n", "--nologo", "--json", "--dry-run", "--create-links"], runtime.Error)) return 2;
-		var result = CloudStorageDetector.Detect(runtime);
+		if (!ValidateOptions(args, command, ["-n", "--nologo", "--json", "--dry-run", "--create-links", "--onedrive-personal"], runtime.Error)) return 2;
+		var result = CloudStorageDetector.Detect(runtime, OptionValue(args, "--onedrive-personal"));
 		var dryRun = Contains(args, "--dry-run");
 		var createLinks = Contains(args, "--create-links");
 		if (createLinks && !dryRun)
@@ -94,9 +103,9 @@ internal static class AmafuApplication
 
 	private static int Initialize(string[] args, AmafuRuntime runtime, string command)
 	{
-		if (!ValidateOptions(args, command, ["-n", "--nologo", "-f", "--force", "--dry-run", "--create-links"], runtime.Error)) return 2;
+		if (!ValidateOptions(args, command, ["-n", "--nologo", "-f", "--force", "--dry-run", "--create-links", "--onedrive-personal"], runtime.Error)) return 2;
 
-		var result = CloudStorageDetector.Detect(runtime);
+		var result = CloudStorageDetector.Detect(runtime, OptionValue(args, "--onedrive-personal"));
 		var configuration = new AmafuConfiguration(runtime.HomeDirectory, result.Providers);
 		var payload = AmafuConfigurationRenderer.Render(configuration);
 
@@ -145,8 +154,20 @@ internal static class AmafuApplication
 		IReadOnlyCollection<string> validOptions,
 		TextWriter error)
 	{
-		foreach (var argument in args)
+		var arguments = args.ToArray();
+		for (var index = 0; index < arguments.Length; index++)
 		{
+			var argument = arguments[index];
+			if (argument == "--onedrive-personal" && validOptions.Contains(argument))
+			{
+				if (++index >= arguments.Length || arguments[index].StartsWith("-", StringComparison.Ordinal)
+					|| arguments.Count(value => value == argument) != 1)
+				{
+					error.WriteLine("--onedrive-personal requires one folder name or path and may appear only once.");
+					return false;
+				}
+				continue;
+			}
 			if (string.Equals(argument, command, StringComparison.Ordinal)) continue;
 			if (argument is "-h" or "--help" or "-v" or "--version") continue;
 			if (validOptions.Contains(argument, StringComparer.Ordinal)) continue;
@@ -154,6 +175,34 @@ internal static class AmafuApplication
 			return false;
 		}
 		return true;
+	}
+
+	private static string? Command(string[] args)
+	{
+		for (var index = 0; index < args.Length; index++)
+		{
+			if (args[index] == "--onedrive-personal") { index++; continue; }
+			if (!args[index].StartsWith("-", StringComparison.Ordinal)) return args[index];
+		}
+		return null;
+	}
+
+	private static string? OptionValue(string[] args, string option)
+	{
+		var index = Array.IndexOf(args, option);
+		return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
+	}
+
+	private static int Reconcile(string[] args, AmafuRuntime runtime, string command)
+	{
+		if (!ValidateOptions(args, command, ["-n", "--nologo", "--apply", "--dry-run", "--onedrive-personal"], runtime.Error)) return 2;
+		if (Contains(args, "--apply") && Contains(args, "--dry-run"))
+		{
+			runtime.Error.WriteLine("Choose either --apply or --dry-run.");
+			return 2;
+		}
+		CloudConfigurationReconciler.Run(runtime, OptionValue(args, "--onedrive-personal"), Contains(args, "--apply"));
+		return 0;
 	}
 
 	private static bool Contains(IEnumerable<string> args, params string[] values)

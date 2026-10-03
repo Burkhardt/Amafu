@@ -3,11 +3,10 @@ namespace Amafu.Tests;
 public sealed class CloudStorageDetectorTests
 {
 	[Fact]
-	public void Detect_UsesFirstOneDriveCandidateAndInnerDataDirectory()
+	public void Detect_UsesPersonalOneDriveAndInnerDataDirectory()
 	{
 		using var fixture = new TestDirectory();
 		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive", "OneDriveData");
-		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive-Personal", "OneDriveData");
 
 		var result = CloudStorageDetector.Detect(TestRuntime.Create(fixture.FullPath));
 
@@ -53,7 +52,7 @@ public sealed class CloudStorageDetectorTests
 		var result = CloudStorageDetector.Detect(TestRuntime.Create(fixture.FullPath));
 
 		var google = Assert.Single(result.Providers);
-		Assert.Equal("GoogleDrive", google.Name);
+		Assert.Equal("GoogleDriveUser", google.Name);
 		Assert.Equal(expected, google.RootPath);
 	}
 

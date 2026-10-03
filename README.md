@@ -1,5 +1,13 @@
 # Amafu
 
+## 4.5.3 (prepared)
+
+CR051 adds multiple Google Drive and corporate OneDrive accounts, deterministic
+personal OneDrive selection, account metadata, and noninteractive configuration
+reconciliation. OsLib must be updated alongside Amafu to recognize named roots.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.3.md).
+
 ## 4.5.2
 
 Adds optional `--create-links` cloud shortcuts under `~/.CloudStorage` for `detect` and `init`, with read-only previews and preservation of existing paths.
@@ -51,7 +59,7 @@ On macOS or Linux, this installs the zero-dependency native executable into
 on the standard shell path, no `$PATH` change and no later copy step are needed:
 
 ```bash
-AMAFU_VERSION=4.5.2
+AMAFU_VERSION=4.5.3
 case "$(uname -s)-$(uname -m)" in
   Darwin-arm64) AMAFU_RID=osx-arm64 ;;
   Darwin-x86_64) AMAFU_RID=osx-x64 ;;
@@ -86,7 +94,7 @@ Published targets:
 - Linux ARM64 and x64;
 - Windows x64.
 
-## Platform support in 4.5.2
+## Platform support in 4.5.3
 
 Automatic cloud-provider discovery is supported and tested on **macOS only** in
 this release. The Linux and Windows binaries are provided so the native command,
@@ -100,13 +108,13 @@ and tested in a later release.
 Operators who already use .NET 10 can install the NuGet tool package:
 
 ```bash
-dotnet tool install --global Amafu --version 4.5.2
+dotnet tool install --global Amafu --version 4.5.3
 ```
 
 or update an existing installation:
 
 ```bash
-dotnet tool update --global Amafu --version 4.5.2
+dotnet tool update --global Amafu --version 4.5.3
 ```
 
 Both installations expose the same `amafu` command.
@@ -116,7 +124,7 @@ To install the NuGet tool into the shared `/usr/local/bin` tool directory:
 ```bash
 sudo dotnet tool install Amafu \
   --tool-path /usr/local/bin \
-  --version 4.5.2
+  --version 4.5.3
 ```
 
 To update that installation:
@@ -124,7 +132,7 @@ To update that installation:
 ```bash
 sudo dotnet tool update Amafu \
   --tool-path /usr/local/bin \
-  --version 4.5.2
+  --version 4.5.3
 ```
 
 The `--tool-path /usr/local/bin` form likewise makes `amafu` immediately
@@ -134,6 +142,76 @@ on the target machine. Use the NativeAOT installation above when no .NET
 runtime should be required.
 
 ## Commands
+
+### Account discovery and reconciliation (4.5.3)
+
+Amafu discovers every Google Drive account and each corporate OneDrive root.
+For example, `GoogleDrive-rainer.burkhardt@gmail.com` becomes
+`GoogleDriveRainer`, and `GoogleDrive-yebo@umshadisi.com` becomes
+`GoogleDriveYebo`. Each account independently uses its existing `GDriveData`
+subfolder, or `My Drive` when that subfolder is absent. Corporate roots such as
+`OneDrive-AfricaStage` and `OneDrive - Contoso` become `OneDriveAfricaStage` and
+`OneDriveContoso`. Dropbox and iCloud discovery retain their previous behavior.
+
+Exactly one personal OneDrive root is selected under the `OneDrive` key:
+
+1. An explicit `--onedrive-personal` folder name or path wins.
+2. Otherwise, keep an existing valid configured personal root.
+3. Otherwise, choose the longest folder name among `OneDrive` and
+   `OneDrive-Personal*`; ties use the highest numeric suffix, then ordinal path
+   order. Thus `OneDrive-Personal(9)` wins over `OneDrive-Personal(2)` when there
+   is no configured preference. This is a naming heuristic, not a test of which
+   account is newest or currently syncing.
+
+All detected corporate accounts are retained. No interactive prompt is used.
+The selected personal root is visible in output; other checked paths are also
+listed. Override the selection explicitly when needed:
+
+```bash
+amafu detect --onedrive-personal 'OneDrive-Personal(2)' --json
+```
+
+Detection JSON keeps `name` and `path`, and adds `provider` and `account` when
+known. Names are stable when accounts are added. Case-insensitive account-name
+collisions report both roots and fail before writes. Google short names use the
+part before the first `.` or `@`, strip non-ASCII-alphanumerics, then capitalize
+its initial letter. Empty names fail. Duplicate aliases of one root are folded.
+
+To discover additional accounts and propose switching an existing configuration
+to the `~/.CloudStorage` shortcuts:
+
+```bash
+amafu reconcile                       # preview only, no writes
+amafu reconcile --apply               # back up, create shortcuts, update config
+
+# Select a different personal OneDrive noninteractively:
+amafu reconcile --onedrive-personal 'OneDrive-Personal(2)'
+amafu reconcile --onedrive-personal 'OneDrive-Personal(2)' --apply
+```
+
+Reconciliation retains existing settings and default order, adding newly
+found roots. A second label for an already configured root is not added to the
+scan order again. Unknown or unavailable configured roots are retained. The
+`Cloud` and `DefaultCloudOrder` sections are reformatted; unrelated JSON5 text
+(including its comments and custom settings) stays intact. Unsupported or
+ambiguous input fails without rewriting it. The original configuration is saved
+as `RAIkeep.json5.before-reconcile-<timestamp>-<unique suffix>` before applying.
+The final configuration replacement uses a sibling temporary file and preserves
+its Unix permissions.
+
+Ordinary link creation never replaces existing paths. Reconciliation may
+repoint the `OneDrive` symbolic link only for an explicit personal selection,
+only when that link matches the previously configured root, and only with
+`--apply`. Other conflicts fail before writes. No provider data is moved or
+removed. If a later write fails, the backup remains and successfully created
+new shortcuts may remain; rerun the preview before retrying.
+
+Use the corresponding updated OsLib consumers before switching configuration
+keys or paths: older OsLib releases recognized only four literal cloud keys.
+Restart long-running OsLib consumers after applying a configuration change; their
+configuration snapshot is captured at startup. Amafu owns discovery and configuration
+generation; Os.Config consumes all path
+entries in `Cloud`, while `DefaultCloudOrder` governs selection and preference.
 
 ### Cloud shortcuts (4.5.2)
 
@@ -220,7 +298,7 @@ must create an ordinary user-owned configuration.
 
 - Detection is read-only unless `--create-links` is supplied, and never creates
   cloud-provider roots. Shortcut creation does not overwrite existing paths.
-- Provider auto-detection is supported and tested only on macOS in 4.5.2;
+- Provider auto-detection is supported and tested only on macOS in 4.5.3;
   other platforms receive the explicit starter-template fallback.
 - Dry run performs zero filesystem writes.
 - An existing configuration is byte-for-byte preserved without `--force`.
@@ -245,6 +323,6 @@ must create an ordinary user-owned configuration.
 ## Documentation
 
 - Foldable class and method reference: [API.md](https://github.com/Burkhardt/Amafu/blob/main/API.md)
-- Latest release notes: [Amafu_RELEASE_NOTES_4.5.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.2.md)
+- Latest release notes: [Amafu_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.3.md)
 - Governing request:
   [CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR/CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md)

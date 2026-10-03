@@ -13,13 +13,24 @@ internal static class CliHelp
 	{
 		if (!noLogo) WriteBanner(output);
 
+		if (string.Equals(command, "reconcile", StringComparison.OrdinalIgnoreCase))
+		{
+			output.WriteLine("amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]");
+			WriteRows(output, width,
+				[("--apply", OutputIcon.ToString(), "back up configuration, create shortcuts, and apply the previewed changes"),
+				 ("--dry-run", OutputIcon.ToString(), "preview only (the default); never prompt interactively"),
+				 ("--onedrive-personal", FolderIcon.ToString(), "select a detected personal OneDrive folder by name or path")]);
+			return;
+		}
+
 		if (string.Equals(command, "detect", StringComparison.OrdinalIgnoreCase))
 		{
-			output.WriteLine("amafu detect [--json] [--create-links] [--dry-run]");
+			output.WriteLine("amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]");
 			output.WriteLine();
 			WriteRows(output, width,
 				[("--json", OutputIcon.ToString(), "print detected roots as JSON"),
 				 ("--dry-run", OutputIcon.ToString(), "preview detection without creating shortcuts"),
+				 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
 				 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts")]);
 			return;
 		}
@@ -27,26 +38,29 @@ internal static class CliHelp
 		if (string.Equals(command, "init", StringComparison.OrdinalIgnoreCase) ||
 			string.Equals(command, "init-config", StringComparison.OrdinalIgnoreCase))
 		{
-			output.WriteLine("amafu init [--dry-run] [-f|--force] [--create-links]");
+			output.WriteLine("amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]");
 			output.WriteLine();
 			WriteRows(output, width,
 				[("-f, --force", ForceIcon.ToString(), "overwrite an existing configuration"),
+				 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
 				 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts"),
 				 ("--dry-run", OutputIcon.ToString(), "print configuration without creating files or shortcuts")]);
 			return;
 		}
 
 		WriteRows(output, width,
-			[("Commands:", InfoIcon.ToString(), "detect, init"),
-			 ("  amafu detect [--json] [--create-links] [--dry-run]", string.Empty, string.Empty),
-			 ("  amafu init [--dry-run] [-f|--force] [--create-links]", string.Empty, string.Empty),
+			[("Commands:", InfoIcon.ToString(), "detect, init, reconcile"),
+			 ("  amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
+			 ("  amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]", string.Empty, string.Empty),
+			 ("  amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
 			 ("-h, --help", HelpIcon.ToString(), "print out all options"),
 			 ("-v, --version", InfoIcon.ToString(), "print version info"),
 			 ("-n, --nologo", BannerIcon.ToString(), "do not display the banner"),
 			 ("-f, --force", ForceIcon.ToString(), "overwrite an existing configuration"),
 			 ("--dry-run", OutputIcon.ToString(), "preview detection or configuration without writing"),
 			 ("--json", OutputIcon.ToString(), "print machine-readable cloud detection"),
-			 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts"),
+			 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
+				 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts"),
 			 ("Configuration", FolderIcon.ToString(), "~/.config/RAIkeep.json5")]);
 	}
 
