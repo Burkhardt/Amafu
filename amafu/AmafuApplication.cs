@@ -108,7 +108,11 @@ internal static class AmafuApplication
 		if (!ValidateOptions(args, command, ["-n", "--nologo", "-f", "--force", "--dry-run", "--create-links", "--onedrive-personal"], runtime.Error)) return 2;
 
 		var result = CloudStorageDetector.Detect(runtime, OptionValue(args, "--onedrive-personal"));
-		var configuration = new AmafuConfiguration(runtime.HomeDirectory, result.Providers);
+		var createLinks = Contains(args, "--create-links");
+		var configuration = new AmafuConfiguration(runtime.HomeDirectory,
+			result.Providers.Select(provider => createLinks
+				? provider with { RootPath = CloudStorageLinks.AliasPath(runtime.HomeDirectory, provider.Name) }
+				: provider).ToArray());
 		var payload = AmafuConfigurationRenderer.Render(configuration);
 
 		if (Contains(args, "--dry-run"))
@@ -122,7 +126,7 @@ internal static class AmafuApplication
 			var force = Contains(args, "-f", "--force");
 			if (File.Exists(runtime.ConfigurationFile) && !force)
 				throw new AmafuConfigurationExistsException(runtime.ConfigurationFile);
-			if (Contains(args, "--create-links"))
+			if (createLinks)
 				CloudStorageLinks.Ensure(runtime.HomeDirectory, result.Providers);
 			AmafuConfigurationWriter.Write(
 				runtime.ConfigurationFile,

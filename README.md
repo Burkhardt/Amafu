@@ -1,6 +1,15 @@
 # Amafu
 
-## 4.5.3 (prepared)
+## 4.5.4
+
+`amafu init --create-links` now writes `~/.CloudStorage/<provider>/` paths
+into the generated configuration. `--dry-run` previews those same paths without
+creating files or links. For an existing configuration, preview with
+`amafu reconcile`, then migrate with `amafu reconcile --apply` (with a backup).
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.4.md).
+
+## 4.5.3
 
 CR051 adds multiple Google Drive and corporate OneDrive accounts, deterministic
 personal OneDrive selection, account metadata, and noninteractive configuration
@@ -59,7 +68,7 @@ On macOS or Linux, this installs the zero-dependency native executable into
 on the standard shell path, no `$PATH` change and no later copy step are needed:
 
 ```bash
-AMAFU_VERSION=4.5.3
+AMAFU_VERSION=4.5.4
 case "$(uname -s)-$(uname -m)" in
   Darwin-arm64) AMAFU_RID=osx-arm64 ;;
   Darwin-x86_64) AMAFU_RID=osx-x64 ;;
@@ -94,7 +103,7 @@ Published targets:
 - Linux ARM64 and x64;
 - Windows x64.
 
-## Platform support in 4.5.3
+## Platform support in 4.5.4
 
 Automatic cloud-provider discovery is supported and tested on **macOS only** in
 this release. The Linux and Windows binaries are provided so the native command,
@@ -108,13 +117,13 @@ and tested in a later release.
 Operators who already use .NET 10 can install the NuGet tool package:
 
 ```bash
-dotnet tool install --global Amafu --version 4.5.3
+dotnet tool install --global Amafu --version 4.5.4
 ```
 
 or update an existing installation:
 
 ```bash
-dotnet tool update --global Amafu --version 4.5.3
+dotnet tool update --global Amafu --version 4.5.4
 ```
 
 Both installations expose the same `amafu` command.
@@ -124,7 +133,7 @@ To install the NuGet tool into the shared `/usr/local/bin` tool directory:
 ```bash
 sudo dotnet tool install Amafu \
   --tool-path /usr/local/bin \
-  --version 4.5.3
+  --version 4.5.4
 ```
 
 To update that installation:
@@ -132,7 +141,7 @@ To update that installation:
 ```bash
 sudo dotnet tool update Amafu \
   --tool-path /usr/local/bin \
-  --version 4.5.3
+  --version 4.5.4
 ```
 
 The `--tool-path /usr/local/bin` form likewise makes `amafu` immediately
@@ -242,10 +251,13 @@ destinations are checked before creation. If a later filesystem operation
 fails, links already created are retained and the command can be retried.
 
 Use `amafu init --create-links` to create shortcuts along with a new
-configuration. Generated configuration and `detect --json` continue to contain
-the real provider paths. `detect --create-links --json` creates shortcuts while
-keeping stdout valid JSON. Without `--create-links`, existing command behavior
-is unchanged. `--dry-run` always prevents filesystem writes.
+configuration that uses `~/.CloudStorage/<provider>/` paths. Preview that exact
+configuration with `amafu init --create-links --dry-run`; no links or files are
+created during a dry run. Plain `amafu init` uses the detected real roots.
+`detect --json` continues to report real provider paths, and
+`detect --create-links --json` creates shortcuts while keeping stdout valid JSON.
+To migrate an existing configuration while preserving its other settings, use
+`amafu reconcile` to preview and `amafu reconcile --apply` to apply with a backup.
 
 #### Finder Favorites on macOS
 
@@ -298,7 +310,7 @@ must create an ordinary user-owned configuration.
 
 - Detection is read-only unless `--create-links` is supplied, and never creates
   cloud-provider roots. Shortcut creation does not overwrite existing paths.
-- Provider auto-detection is supported and tested only on macOS in 4.5.3;
+- Provider auto-detection is supported and tested only on macOS in 4.5.4;
   other platforms receive the explicit starter-template fallback.
 - Dry run performs zero filesystem writes.
 - An existing configuration is byte-for-byte preserved without `--force`.
@@ -323,6 +335,6 @@ must create an ordinary user-owned configuration.
 ## Documentation
 
 - Foldable class and method reference: [API.md](https://github.com/Burkhardt/Amafu/blob/main/API.md)
-- Latest release notes: [Amafu_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.3.md)
+- Latest release notes: [Amafu_RELEASE_NOTES_4.5.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.4.md)
 - Governing request:
   [CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR/CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md)
