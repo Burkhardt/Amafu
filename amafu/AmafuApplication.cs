@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Amafu;
 
 internal static class AmafuApplication
@@ -11,7 +13,7 @@ internal static class AmafuApplication
 
 		if (version)
 		{
-			runtime.Output.WriteLine($"amafu {VersionInfo.Current}");
+			runtime.Output.WriteLine($"amafu v{Version()}");
 			return 0;
 		}
 
@@ -207,4 +209,11 @@ internal static class AmafuApplication
 
 	private static bool Contains(IEnumerable<string> args, params string[] values)
 		=> args.Any(argument => values.Contains(argument, StringComparer.Ordinal));
+
+	private static string Version()
+	{
+		var informational = Assembly.GetExecutingAssembly()
+			.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+		return (informational ?? "0.0.0").Split('+')[0];
+	}
 }
