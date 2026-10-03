@@ -2,5 +2,5 @@ namespace Amafu;
 
 internal static class VersionInfo
 {
-	internal const string Current = "4.4.8";
+	internal const string Current = "4.5.0";
 }
