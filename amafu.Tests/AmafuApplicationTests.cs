@@ -55,7 +55,7 @@ public sealed class AmafuApplicationTests
 		var exitCode = AmafuApplication.Run([flag], TestRuntime.Create(fixture.FullPath, output: output));
 
 		Assert.Equal(0, exitCode);
-		Assert.Equal("amafu 4.5.0", output.ToString().Trim());
+		Assert.Equal("amafu 4.5.2", output.ToString().Trim());
 	}
 
 	[Fact]
@@ -71,6 +71,7 @@ public sealed class AmafuApplicationTests
 		Assert.Equal(0, exitCode);
 		Assert.Contains("OneDriveData", output.ToString());
 		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".config")));
+		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".CloudStorage")));
 	}
 
 	[Fact]
@@ -84,6 +85,7 @@ public sealed class AmafuApplicationTests
 
 		Assert.Equal(0, exitCode);
 		Assert.True(File.Exists(runtime.ConfigurationFile));
+		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".CloudStorage")));
 		Assert.Contains("\"OneDrive\"", File.ReadAllText(runtime.ConfigurationFile));
 		if (!OperatingSystem.IsWindows())
 		{
@@ -160,6 +162,86 @@ public sealed class AmafuApplicationTests
 		Assert.Equal(0, exitCode);
 		Assert.Contains("\"Dropbox\"", output.ToString());
 		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".config")));
+		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".CloudStorage")));
+	}
+
+	[Theory]
+	[InlineData("detect")]
+	[InlineData("init")]
+	[InlineData("init-config")]
+	public void CreateLinks_IsExplicitAndKeepsRealConfigurationPaths(string command)
+	{
+		if (OperatingSystem.IsWindows()) Assert.Skip("Symlink creation requires Windows developer mode.");
+		using var fixture = new TestDirectory();
+		var root = fixture.CreateDirectory("Library", "Mobile Documents", "com~apple~CloudDocs");
+		var runtime = TestRuntime.Create(fixture.FullPath);
+
+		Assert.Equal(0, AmafuApplication.Run([command, "--create-links"], runtime));
+		Assert.Equal(root, new DirectoryInfo(CloudStorageLinks.AliasPath(fixture.FullPath, "ICloudDrive")).LinkTarget);
+		if (command == "detect") Assert.False(File.Exists(runtime.ConfigurationFile));
+		else
+		{
+			var config = File.ReadAllText(runtime.ConfigurationFile);
+			Assert.Contains("~/Library/Mobile Documents/com~apple~CloudDocs/", config);
+			Assert.DoesNotContain(".CloudStorage", config);
+		}
+	}
+
+	[Theory]
+	[InlineData("detect")]
+	[InlineData("init")]
+	public void CreateLinks_DryRunWritesNothing(string command)
+	{
+		using var fixture = new TestDirectory();
+		fixture.CreateDirectory("Library", "CloudStorage", "GoogleDrive-user@example.com", "My Drive");
+		Assert.Equal(0, AmafuApplication.Run([command, "--create-links", "--dry-run"], TestRuntime.Create(fixture.FullPath)));
+		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".CloudStorage")));
+		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".config")));
+	}
+
+	[Fact]
+	public void CreateLinks_JsonRemainsParseableAndReportsRealRoot()
+	{
+		if (OperatingSystem.IsWindows()) Assert.Skip("Symlink creation requires Windows developer mode.");
+		using var fixture = new TestDirectory();
+		var root = fixture.CreateDirectory("Library", "CloudStorage", "Dropbox");
+		var output = new StringWriter();
+		Assert.Equal(0, AmafuApplication.Run(["detect", "--create-links", "--json"], TestRuntime.Create(fixture.FullPath, output: output)));
+		using var json = System.Text.Json.JsonDocument.Parse(output.ToString());
+		Assert.Contains("~/Library/CloudStorage/Dropbox/", output.ToString());
+		Assert.Equal(root, new DirectoryInfo(CloudStorageLinks.AliasPath(fixture.FullPath, "Dropbox")).LinkTarget);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void CreateLinks_ConflictPreservesConfigurationEvenWithForce(bool force)
+	{
+		using var fixture = new TestDirectory();
+		fixture.CreateDirectory("Library", "CloudStorage", "Dropbox");
+		fixture.CreateDirectory(".CloudStorage", "Dropbox");
+		fixture.CreateDirectory(".config");
+		var error = new StringWriter();
+		var runtime = TestRuntime.Create(fixture.FullPath, error: error);
+		File.WriteAllText(runtime.ConfigurationFile, "keep");
+		string[] args = force ? ["init", "--create-links", "--force"] : ["detect", "--create-links"];
+		Assert.Equal(4, AmafuApplication.Run(args, runtime));
+		Assert.Equal("keep", File.ReadAllText(runtime.ConfigurationFile));
+		Assert.Contains("existing file or directory", error.ToString());
+		Assert.Null(new DirectoryInfo(CloudStorageLinks.AliasPath(fixture.FullPath, "Dropbox")).LinkTarget);
+	}
+
+	[Fact]
+	public void Init_ExistingConfigurationPreventsLinkCreation()
+	{
+		using var fixture = new TestDirectory();
+		fixture.CreateDirectory("Library", "CloudStorage", "Dropbox");
+		fixture.CreateDirectory(".config");
+		var runtime = TestRuntime.Create(fixture.FullPath);
+		File.WriteAllText(runtime.ConfigurationFile, "keep");
+		Assert.Equal(3, AmafuApplication.Run(["init", "--create-links"], runtime));
+		Assert.False(Directory.Exists(Path.Combine(fixture.FullPath, ".CloudStorage")));
+		Assert.Equal("keep", File.ReadAllText(runtime.ConfigurationFile));
 	}
 
 	[Fact]

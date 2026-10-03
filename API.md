@@ -37,6 +37,16 @@ hydrates a provider directory.
 </details>
 
 <details>
+<summary><code>CloudStorageLinks</code></summary>
+
+Creates `~/.CloudStorage` and provider symlinks only when `--create-links` is
+requested on `detect` or `init`. Validates all destinations before creation,
+reuses matching links, and refuses existing conflicting files, directories, or
+links. Never creates provider roots. `--dry-run` bypasses all writes.
+
+</details>
+
+<details>
 <summary><code>AmafuConfiguration</code></summary>
 
 The internal strongly typed representation rendered to `RAIkeep.json5`. It is

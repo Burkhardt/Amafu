@@ -43,8 +43,19 @@ internal static class AmafuApplication
 
 	private static int Detect(string[] args, AmafuRuntime runtime, string command)
 	{
-		if (!ValidateOptions(args, command, ["-n", "--nologo", "--json"], runtime.Error)) return 2;
+		if (!ValidateOptions(args, command, ["-n", "--nologo", "--json", "--dry-run", "--create-links"], runtime.Error)) return 2;
 		var result = CloudStorageDetector.Detect(runtime);
+		var dryRun = Contains(args, "--dry-run");
+		var createLinks = Contains(args, "--create-links");
+		if (createLinks && !dryRun)
+		{
+			try { CloudStorageLinks.Ensure(runtime.HomeDirectory, result.Providers); }
+			catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+			{
+				runtime.Error.WriteLine($"Unable to create cloud shortcuts: {exception.Message}");
+				return 4;
+			}
+		}
 
 		if (Contains(args, "--json"))
 		{
@@ -61,7 +72,15 @@ internal static class AmafuApplication
 		else
 		{
 			foreach (var provider in result.Providers)
-				runtime.Output.WriteLine($"{provider.Name}: {AmafuConfigurationRenderer.ToPortablePath(provider.RootPath, runtime.HomeDirectory)}");
+			{
+				var alias = AmafuConfigurationRenderer.ToPortablePath(
+					CloudStorageLinks.AliasPath(runtime.HomeDirectory, provider.Name), runtime.HomeDirectory);
+				var root = AmafuConfigurationRenderer.ToPortablePath(provider.RootPath, runtime.HomeDirectory);
+				runtime.Output.WriteLine(createLinks
+					? $"{provider.Name}: {alias} -> {root}"
+					: $"{provider.Name}: {root}");
+			}
+			if (createLinks && dryRun) runtime.Output.WriteLine("Dry run: no shortcuts were created.");
 		}
 
 		if (result.CheckedPaths.Count > 0)
@@ -75,7 +94,7 @@ internal static class AmafuApplication
 
 	private static int Initialize(string[] args, AmafuRuntime runtime, string command)
 	{
-		if (!ValidateOptions(args, command, ["-n", "--nologo", "-f", "--force", "--dry-run"], runtime.Error)) return 2;
+		if (!ValidateOptions(args, command, ["-n", "--nologo", "-f", "--force", "--dry-run", "--create-links"], runtime.Error)) return 2;
 
 		var result = CloudStorageDetector.Detect(runtime);
 		var configuration = new AmafuConfiguration(runtime.HomeDirectory, result.Providers);
@@ -89,10 +108,15 @@ internal static class AmafuApplication
 
 		try
 		{
+			var force = Contains(args, "-f", "--force");
+			if (File.Exists(runtime.ConfigurationFile) && !force)
+				throw new AmafuConfigurationExistsException(runtime.ConfigurationFile);
+			if (Contains(args, "--create-links"))
+				CloudStorageLinks.Ensure(runtime.HomeDirectory, result.Providers);
 			AmafuConfigurationWriter.Write(
 				runtime.ConfigurationFile,
 				payload,
-				Contains(args, "-f", "--force"));
+				force);
 		}
 		catch (AmafuConfigurationExistsException)
 		{
@@ -101,7 +125,7 @@ internal static class AmafuApplication
 		}
 		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
 		{
-			runtime.Error.WriteLine($"Unable to write '~/.config/RAIkeep.json5': {exception.Message}");
+			runtime.Error.WriteLine($"Unable to initialize '~/.config/RAIkeep.json5': {exception.Message}");
 			return 4;
 		}
 
