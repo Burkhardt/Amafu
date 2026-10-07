@@ -84,6 +84,44 @@ public sealed class CloudStorageDetectorTests
 	}
 
 	[Fact]
+	public void Detect_PrefersExistingCleanShortcutsBeforeVendorRoots()
+	{
+		using var fixture = new TestDirectory();
+		var cleanOneDrive = fixture.CreateDirectory(".CloudStorage", "OneDrive");
+		var cleanGoogle = fixture.CreateDirectory(".CloudStorage", "GoogleDriveRainer");
+		var cleanDropbox = fixture.CreateDirectory(".CloudStorage", "Dropbox");
+		var cleanICloud = fixture.CreateDirectory(".CloudStorage", "ICloudDrive");
+		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive", "OneDriveData");
+		fixture.CreateDirectory("Library", "CloudStorage", "GoogleDrive-rainer.burkhardt@example.com", "My Drive", "GDriveData");
+		fixture.CreateDirectory("Library", "CloudStorage", "Dropbox", "DropboxData");
+		fixture.CreateDirectory("Library", "Mobile Documents", "com~apple~CloudDocs", "ICloudDriveData");
+
+		var result = CloudStorageDetector.Detect(TestRuntime.Create(fixture.FullPath));
+
+		Assert.Equal(
+			[cleanOneDrive, cleanDropbox, cleanGoogle, cleanICloud],
+			result.Providers.Select(provider => provider.RootPath));
+		Assert.Equal(
+			["OneDrive", "Dropbox", "GoogleDriveRainer", "ICloudDrive"],
+			result.Providers.Select(provider => provider.Name));
+		Assert.True(result.CheckedPaths.ToList().IndexOf(cleanOneDrive) < result.CheckedPaths.ToList().IndexOf(
+			Path.Combine(fixture.FullPath, "Library", "CloudStorage", "OneDrive")));
+	}
+
+	[Fact]
+	public void Detect_UsesOneDrivePersonalShortcutWhenGenericShortcutIsAbsent()
+	{
+		using var fixture = new TestDirectory();
+		var shortcut = fixture.CreateDirectory(".CloudStorage", "OneDrivePersonal");
+		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive-Personal(2)", "OneDriveData");
+
+		var provider = Assert.Single(CloudStorageDetector.Detect(TestRuntime.Create(fixture.FullPath)).Providers);
+
+		Assert.Equal("OneDrive", provider.Name);
+		Assert.Equal(shortcut, provider.RootPath);
+	}
+
+	[Fact]
 	public void Detect_EmitsProvidersInContractOrder()
 	{
 		using var fixture = new TestDirectory();

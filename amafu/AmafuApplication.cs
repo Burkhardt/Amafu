@@ -110,7 +110,7 @@ internal static class AmafuApplication
 		var result = CloudStorageDetector.Detect(runtime, OptionValue(args, "--onedrive-personal"));
 		var createLinks = Contains(args, "--create-links");
 		var configuration = new AmafuConfiguration(runtime.HomeDirectory,
-			result.Providers.Select(provider => createLinks
+			result.Providers.Select(provider => createLinks && !UsesCleanCloudStoragePath(provider.RootPath, runtime.HomeDirectory)
 				? provider with { RootPath = CloudStorageLinks.AliasPath(runtime.HomeDirectory, provider.Name) }
 				: provider).ToArray());
 		var payload = AmafuConfigurationRenderer.Render(configuration);
@@ -213,6 +213,16 @@ internal static class AmafuApplication
 
 	private static bool Contains(IEnumerable<string> args, params string[] values)
 		=> args.Any(argument => values.Contains(argument, StringComparer.Ordinal));
+
+	private static bool UsesCleanCloudStoragePath(string path, string homeDirectory)
+	{
+		var cleanRoot = Path.GetFullPath(Path.Combine(homeDirectory, ".CloudStorage"));
+		var parent = Path.GetDirectoryName(Path.GetFullPath(path));
+		return string.Equals(
+			Path.TrimEndingDirectorySeparator(parent ?? string.Empty),
+			Path.TrimEndingDirectorySeparator(cleanRoot),
+			StringComparison.Ordinal);
+	}
 
 	private static string Version()
 	{

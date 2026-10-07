@@ -100,6 +100,44 @@ public sealed class AmafuApplicationTests
 	}
 
 	[Fact]
+	public void Init_UsesExistingCleanCloudStoragePathsWithoutCreateLinks()
+	{
+		using var fixture = new TestDirectory();
+		fixture.CreateDirectory(".CloudStorage", "OneDrive");
+		fixture.CreateDirectory(".CloudStorage", "GoogleDriveRainer");
+		fixture.CreateDirectory(".CloudStorage", "Dropbox");
+		fixture.CreateDirectory(".CloudStorage", "ICloudDrive");
+		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive", "OneDriveData");
+		fixture.CreateDirectory("Library", "CloudStorage", "GoogleDrive-rainer@example.com", "My Drive", "GDriveData");
+		fixture.CreateDirectory("Library", "CloudStorage", "Dropbox", "DropboxData");
+		fixture.CreateDirectory("Library", "Mobile Documents", "com~apple~CloudDocs", "ICloudDriveData");
+		var runtime = TestRuntime.Create(fixture.FullPath);
+
+		Assert.Equal(0, AmafuApplication.Run(["init"], runtime));
+
+		var configuration = File.ReadAllText(runtime.ConfigurationFile);
+		Assert.Contains("\"OneDrive\": \"~/.CloudStorage/OneDrive/\"", configuration);
+		Assert.Contains("\"GoogleDriveRainer\": \"~/.CloudStorage/GoogleDriveRainer/\"", configuration);
+		Assert.Contains("\"Dropbox\": \"~/.CloudStorage/Dropbox/\"", configuration);
+		Assert.Contains("\"ICloudDrive\": \"~/.CloudStorage/ICloudDrive/\"", configuration);
+		Assert.DoesNotContain("~/Library/CloudStorage", configuration);
+		Assert.DoesNotContain("~/Library/Mobile Documents", configuration);
+	}
+
+	[Fact]
+	public void Init_CreateLinksPreservesExistingOneDrivePersonalShortcut()
+	{
+		using var fixture = new TestDirectory();
+		fixture.CreateDirectory(".CloudStorage", "OneDrivePersonal");
+		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive-Personal(2)", "OneDriveData");
+		var runtime = TestRuntime.Create(fixture.FullPath);
+
+		Assert.Equal(0, AmafuApplication.Run(["init", "--create-links"], runtime));
+
+		Assert.Contains("\"OneDrive\": \"~/.CloudStorage/OneDrivePersonal/\"", File.ReadAllText(runtime.ConfigurationFile));
+	}
+
+	[Fact]
 	public void Init_ExistingConfigurationRefusesWithoutMutation()
 	{
 		using var fixture = new TestDirectory();

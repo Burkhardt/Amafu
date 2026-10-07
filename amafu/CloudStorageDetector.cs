@@ -10,6 +10,24 @@ internal static class CloudStorageDetector
 		if (runtime.Platform != AmafuPlatform.MacOS)
 			return new CloudDetectionResult(providers, checkedPaths);
 
+		// A user-owned shortcut is the stable configuration boundary. Inspect it
+		// before vendor-specific locations, whose account directory names change
+		// with provider releases and account changes. The shortcut itself, rather
+		// than its resolved target, remains the configured root.
+		var cleanCloudStorage = Path.Combine(runtime.HomeDirectory, ".CloudStorage");
+		if (personalSelection is null)
+			AddFirstShortcutExisting(providers, checkedPaths, "OneDrive",
+				[Path.Combine(cleanCloudStorage, "OneDrive"), Path.Combine(cleanCloudStorage, "OneDrivePersonal")],
+				"OneDrive", "Personal");
+		AddShortcutIfExisting(providers, checkedPaths, "GoogleDrive", Path.Combine(cleanCloudStorage, "GoogleDrive"),
+			"GoogleDrive", null);
+		AddShortcutIfExisting(providers, checkedPaths, "GoogleDriveRainer", Path.Combine(cleanCloudStorage, "GoogleDriveRainer"),
+			"GoogleDrive", "Rainer");
+		AddShortcutIfExisting(providers, checkedPaths, "Dropbox", Path.Combine(cleanCloudStorage, "Dropbox"),
+			"Dropbox", null);
+		AddShortcutIfExisting(providers, checkedPaths, "ICloudDrive", Path.Combine(cleanCloudStorage, "ICloudDrive"),
+			"ICloudDrive", null);
+
 		var cloudStorage = Path.Combine(runtime.HomeDirectory, "Library", "CloudStorage");
 
 		var oneDriveCandidates = ExpandCandidates(
@@ -24,7 +42,7 @@ internal static class CloudStorageDetector
 		var personalRoots = oneDriveRoots.Where(root => Path.GetFileName(root) == "OneDrive"
 			|| Path.GetFileName(root).StartsWith("OneDrive-Personal", StringComparison.Ordinal)).ToArray();
 		var personal = SelectPersonal(runtime, personalRoots, personalSelection);
-		if (personal is not null)
+		if (personal is not null && !HasProvider(providers, "OneDrive"))
 			AddAccount(providers, checkedPaths, "OneDrive", personal, "OneDriveData", "OneDrive", "Personal");
 		foreach (var root in oneDriveRoots.Except(personalRoots))
 		{
@@ -34,45 +52,100 @@ internal static class CloudStorageDetector
 				"OneDriveData", "OneDrive", account);
 		}
 
-		AddFirstExisting(
-			providers,
-			checkedPaths,
-			"Dropbox",
-			ExpandCandidates(
-				[
-					Path.Combine(cloudStorage, "Dropbox"),
-					Path.Combine(cloudStorage, "Dropbox-Personal")
-				],
-				cloudStorage,
-				"Dropbox-*",
-				checkedPaths),
-			"DropboxData");
+		if (!HasProvider(providers, "Dropbox"))
+			AddFirstExisting(
+				providers,
+				checkedPaths,
+				"Dropbox",
+				ExpandCandidates(
+					[
+						Path.Combine(cloudStorage, "Dropbox"),
+						Path.Combine(cloudStorage, "Dropbox-Personal")
+					],
+					cloudStorage,
+					"Dropbox-*",
+					checkedPaths),
+				"DropboxData");
 
 		// Known accounts precede generic aliases so deduplication retains account metadata.
 		foreach (var root in EnumerateDirectories(cloudStorage, "GoogleDrive-*", checkedPaths))
 		{
 			var email = Path.GetFileName(root)[12..];
 			var first = email.Split(['.', '@'])[0];
-			AddAccount(providers, checkedPaths, "GoogleDrive" + ShortName(first, root),
+			var name = "GoogleDrive" + ShortName(first, root);
+			if (HasCleanProvider(providers, name, runtime.HomeDirectory)) continue;
+			AddAccount(providers, checkedPaths, name,
 				Path.Combine(root, "My Drive"), "GDriveData", "GoogleDrive", email);
 		}
 		foreach (var root in DistinctPaths([Path.Combine(cloudStorage, "GoogleDrive"), runtime.SharedGoogleDriveCandidate]))
-			AddAccount(providers, checkedPaths, "GoogleDrive", root, "GDriveData", "GoogleDrive", null);
+			if (!HasProvider(providers, "GoogleDrive"))
+				AddAccount(providers, checkedPaths, "GoogleDrive", root, "GDriveData", "GoogleDrive", null);
 
-		AddFirstExisting(
-			providers,
-			checkedPaths,
-			"ICloudDrive",
-			[
-				Path.Combine(runtime.HomeDirectory, "Library", "Mobile Documents", "com~apple~CloudDocs"),
-				Path.Combine(cloudStorage, "ICloudDrive")
-			],
-			"ICloudDriveData");
+		if (!HasProvider(providers, "ICloudDrive"))
+			AddFirstExisting(
+				providers,
+				checkedPaths,
+				"ICloudDrive",
+				[
+					Path.Combine(runtime.HomeDirectory, "Library", "Mobile Documents", "com~apple~CloudDocs"),
+					Path.Combine(cloudStorage, "ICloudDrive")
+				],
+				"ICloudDriveData");
 
 		return new CloudDetectionResult(providers
 			.OrderBy(p => p.Provider == "OneDrive" && p.Account == "Personal" ? 0 : 1)
 			.ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
 			.ThenBy(p => p.RootPath, StringComparer.Ordinal).ToArray(), DistinctPaths(checkedPaths));
+	}
+
+	private static bool HasProvider(IEnumerable<DetectedCloudProvider> providers, string name)
+		=> providers.Any(provider => string.Equals(provider.Name, name, StringComparison.OrdinalIgnoreCase));
+
+	private static bool HasCleanProvider(IEnumerable<DetectedCloudProvider> providers, string name, string homeDirectory)
+		=> providers.Any(provider => string.Equals(provider.Name, name, StringComparison.OrdinalIgnoreCase)
+			&& IsCleanCloudStoragePath(provider.RootPath, homeDirectory));
+
+	private static bool IsCleanCloudStoragePath(string path, string homeDirectory)
+	{
+		var cleanRoot = Path.GetFullPath(Path.Combine(homeDirectory, ".CloudStorage"));
+		var parent = Path.GetDirectoryName(Path.GetFullPath(path));
+		return string.Equals(
+			Path.TrimEndingDirectorySeparator(parent ?? string.Empty),
+			Path.TrimEndingDirectorySeparator(cleanRoot),
+			StringComparison.Ordinal);
+	}
+
+	private static void AddFirstShortcutExisting(
+		ICollection<DetectedCloudProvider> providers,
+		ICollection<string> checkedPaths,
+		string name,
+		IEnumerable<string> candidates,
+		string family,
+		string? account)
+	{
+		foreach (var candidate in candidates)
+		{
+			if (!AddShortcutIfExisting(providers, checkedPaths, name, candidate, family, account)) continue;
+			return;
+		}
+	}
+
+	/// <returns>True when the named shortcut or directory exists.</returns>
+	private static bool AddShortcutIfExisting(
+		ICollection<DetectedCloudProvider> providers,
+		ICollection<string> checkedPaths,
+		string name,
+		string candidate,
+		string family,
+		string? account)
+	{
+		checkedPaths.Add(candidate);
+		if (!DirectoryExists(candidate)) return false;
+		if (HasProvider(providers, name)) return true;
+		var canonical = CanonicalDirectory(candidate);
+		if (providers.Any(provider => string.Equals(CanonicalDirectory(provider.RootPath), canonical, StringComparison.Ordinal))) return true;
+		providers.Add(new DetectedCloudProvider(name, Path.GetFullPath(candidate), family, account));
+		return true;
 	}
 
 	private static IEnumerable<string> ExpandCandidates(

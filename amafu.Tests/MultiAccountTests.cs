@@ -62,7 +62,7 @@ public sealed class MultiAccountTests
 	}
 
 	[Fact]
-	public void AliasIsDeduplicated_AndLegacyShortcutIsPreserved()
+	public void ExistingCleanGenericGoogleDriveShortcutIsPreferred()
 	{
 		if (OperatingSystem.IsWindows()) Assert.Skip("Symlinks require Windows developer mode.");
 		using var home = new TestDirectory();
@@ -78,9 +78,9 @@ public sealed class MultiAccountTests
 		CloudStorageLinks.Ensure(home.FullPath, providers);
 		CloudStorageLinks.Ensure(home.FullPath, providers);
 		Assert.Equal(root, new DirectoryInfo(legacy).LinkTarget);
-		Assert.Equal(root, new DirectoryInfo(CloudStorageLinks.AliasPath(home.FullPath, "GoogleDriveRainer")).LinkTarget);
+		Assert.Null(new DirectoryInfo(CloudStorageLinks.AliasPath(home.FullPath, "GoogleDriveRainer")).LinkTarget);
 		Assert.Equal(yebo, new DirectoryInfo(CloudStorageLinks.AliasPath(home.FullPath, "GoogleDriveYebo")).LinkTarget);
-		Assert.Equal("keep", File.ReadAllText(Path.Combine(home.FullPath, ".CloudStorage", "GoogleDriveRainer", "original.txt")));
+		Assert.Equal("keep", File.ReadAllText(Path.Combine(home.FullPath, ".CloudStorage", "GoogleDrive", "original.txt")));
 	}
 
 	[Theory]
