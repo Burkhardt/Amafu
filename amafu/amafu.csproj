@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>Amafu</Title>
 		<Description>Standalone cloud-storage discovery and RAIkeep configuration bootstrap CLI.</Description>
-		<Version>4.5.4</Version>
+		<Version>4.5.5</Version>
 		<PackageId>Amafu</PackageId>
 		<Authors>Rainer Burkhardt</Authors>
 		<Copyright>© Rainer Burkhardt</Copyright>
@@ -14,7 +14,7 @@
 		<RepositoryUrl>https://github.com/Burkhardt/Amafu.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<PackageReleaseNotes>CR051: multiple Google Drive and corporate OneDrive accounts, deterministic personal account selection, named shortcuts, JSON account metadata, and noninteractive configuration reconciliation with backup and explicit apply.</PackageReleaseNotes>
+		<PackageReleaseNotes>Coordinated 4.5.5 dependency line; cloud configuration behavior is unchanged.</PackageReleaseNotes>
 		<PackageTags>raikeep;cloud;configuration;cli;tool;nativeaot</PackageTags>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
