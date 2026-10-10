@@ -29,25 +29,52 @@ prefers it over a vendor-managed path and records that clean path in
 **Amafu** (*amafu*: isiZulu, “clouds”) is the standalone RAIkeep cloud-storage
 discovery and configuration bootstrap utility. Its installed command is `amafu`.
 
+## 4.5.8 (v4.5.8)
+
+<summary>Latest release with cloud-storage bootstrap, symlink generation, and RAIkeep configuration.</summary>
+
+<details>
+<summary><b>Previous Versions</b></summary>
+
+### 4.5.7
+
+Coordinated 4.5.7 release; public behavior is aligned with the synchronized platform.
+
+### 4.5.6
+
+Coordinated 4.5.6 release; public behavior is aligned with the synchronized platform.
+
+### 4.5.5
+
+Coordinated 4.5.5 release; public behavior is aligned with the synchronized platform.
+
+</details>
+
 Amafu discovers supported cloud-provider roots and creates the shared
 `~/.config/RAIkeep.json5` consumed by both the C# `pits` CLI and Python `jpit`.
 It does not reference OsLib, JsonPit, Python, Node.js, or any third-party runtime
 package, and it never loads or mutates OsLib's `Os.Config`.
 
-## Install
+## 4.5.8 (v4.5.8)
 
-### Runtime-independent native executable
+<summary>Latest release with cloud-storage bootstrap, symlink generation, and RAIkeep configuration.</summary>
 
-Download the archive for your platform from the
-[Amafu GitHub Releases](https://github.com/Burkhardt/Amafu/releases) page, verify
-its adjacent SHA-256 checksum, extract `amafu` (`amafu.exe` on Windows), and put
-it on your `PATH`. These NativeAOT executables do not require .NET to be
-installed.
+<details>
+<summary><b>Previous Versions</b></summary>
 
-On macOS or Linux, this installs the zero-dependency native executable into
-`/usr/local/bin`. To update, run the same block with the newer version number;
-`install` replaces the existing executable. Because `/usr/local/bin` is already
-on the standard shell path, no `$PATH` change and no later copy step are needed:
+### 4.5.7
+
+Coordinated 4.5.7 release; public behavior is aligned with the synchronized platform.
+
+### 4.5.6
+
+Coordinated 4.5.6 release; public behavior is aligned with the synchronized platform.
+
+### 4.5.5
+
+Coordinated 4.5.5 release; public behavior is aligned with the synchronized platform.
+
+</details>
 
 ```bash
 AMAFU_VERSION=4.5.8
@@ -96,41 +123,37 @@ and tested in a later release.
 
 ### .NET global tool
 
-Operators who already use .NET 10 can install the NuGet tool package:
+## Installation
+
+### 1. User Global Tool Install
 
 ```bash
-dotnet tool install --global Amafu --version 4.5.8
+dotnet tool install --global Amafu
 ```
 
-or update an existing installation:
+To update:
 
 ```bash
-dotnet tool update --global Amafu --version 4.5.8
+dotnet tool update --global Amafu
 ```
 
-Both installations expose the same `amafu` command.
+*(Requires `~/.dotnet/tools` in your `$PATH`)*
 
-To install the NuGet tool into the shared `/usr/local/bin` tool directory:
+### 2. Direct Install to `/usr/local/bin` (Recommended for macOS & Linux)
+
+Install directly to `/usr/local/bin` so no `$PATH` modification is needed:
 
 ```bash
-sudo dotnet tool install Amafu \
-  --tool-path /usr/local/bin \
-  --version 4.5.8
+sudo dotnet tool install Amafu --tool-path /usr/local/bin
 ```
 
-To update that installation:
+To update:
 
 ```bash
-sudo dotnet tool update Amafu \
-  --tool-path /usr/local/bin \
-  --version 4.5.8
+sudo dotnet tool update Amafu --tool-path /usr/local/bin
 ```
 
-The `--tool-path /usr/local/bin` form likewise makes `amafu` immediately
-available without adding the default per-user .NET tool directory to `$PATH` or
-copying a launcher afterward. These commands require a compatible .NET runtime
-on the target machine. Use the NativeAOT installation above when no .NET
-runtime should be required.
+> **Note:** `sudo` is only required during installation and updates to write to `/usr/local/bin`. Running the installed CLI command never requires `sudo` or elevated privileges.
 
 ## Commands
 
