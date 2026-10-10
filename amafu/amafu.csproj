@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Title>Amafu</Title>
 		<Description>Standalone cloud-storage discovery and RAIkeep configuration bootstrap CLI.</Description>
-		<Version>4.5.7</Version>
+		<Version>4.5.8</Version>
 		<PackageId>Amafu</PackageId>
 		<Authors>Rainer Burkhardt</Authors>
 		<Copyright>© Rainer Burkhardt</Copyright>
