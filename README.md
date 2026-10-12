@@ -1,13 +1,14 @@
 # Amafu (`amafu`)
 > **Unified, stable cloud storage paths for macOS — with one command.**
 macOS CloudStorage buries your cloud drives in cryptic, fragile directory paths like:
-`~/Library/CloudStorage/GoogleDrive-user@domain.com/My Drive/GDriveData/`
-These paths break terminal scripts, clutter shell prompts, and change whenever Apple or Google updates their sync client.
-### Amafu solves this permanently:
+`~/Library/CloudStorage/GoogleDrive-user@domain.com/My Drive/GDriveData/`.
+Such paths can potentially break terminal scripts, clutter shell prompts, and change whenever Apple or Google updates their sync client.
+### Amafu solves this:
 
 ```bash
 amafu init --create-links
 ```
+in an _opinionated_ manner.
 
 In less than a second, Amafu auto-detects all your active cloud accounts and creates clean, predictable symlinks under `~/.CloudStorage/`:
 
@@ -29,50 +30,16 @@ prefers it over a vendor-managed path and records that clean path in
 **Amafu** (*amafu*: isiZulu, “clouds”) is the standalone RAIkeep cloud-storage
 discovery and configuration bootstrap utility. Its installed command is `amafu`.
 
-## 4.5.8 (v4.5.8)
+## Latest Version 4.5.8
 
-<summary>Latest release with cloud-storage bootstrap, symlink generation, and RAIkeep configuration.</summary>
+Cloud storage discovery, clean shortcut creation, and shared RAIkeep configuration.
 
-<details>
-<summary><b>Previous Versions</b></summary>
-
-### 4.5.7
-
-Coordinated 4.5.7 release; public behavior is aligned with the synchronized platform.
-
-### 4.5.6
-
-Coordinated 4.5.6 release; public behavior is aligned with the synchronized platform.
-
-### 4.5.5
-
-Coordinated 4.5.5 release; public behavior is aligned with the synchronized platform.
-
-</details>
-
-Amafu discovers supported cloud-provider roots and creates the shared
-`~/.config/RAIkeep.json5` consumed by both the C# `pits` CLI and Python `jpit`.
-It does not reference OsLib, JsonPit, Python, Node.js, or any third-party runtime
-package, and it never loads or mutates OsLib's `Os.Config`.
-
-## 4.5.8 (v4.5.8)
-
-<summary>Latest release with cloud-storage bootstrap, symlink generation, and RAIkeep configuration.</summary>
+Latest release notes: [Amafu_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.8.md).
 
 <details>
 <summary><b>Previous Versions</b></summary>
 
-### 4.5.7
-
-Coordinated 4.5.7 release; public behavior is aligned with the synchronized platform.
-
-### 4.5.6
-
-Coordinated 4.5.6 release; public behavior is aligned with the synchronized platform.
-
-### 4.5.5
-
-Coordinated 4.5.5 release; public behavior is aligned with the synchronized platform.
+Earlier coordinated releases are recorded in the [RAIkeep release-note archive](https://github.com/Burkhardt/RAIkeep/tree/main/doc).
 
 </details>
 
@@ -128,13 +95,13 @@ and tested in a later release.
 ### 1. User Global Tool Install
 
 ```bash
-dotnet tool install --global Amafu
+dotnet tool install --global Amafu --version 4.5.8
 ```
 
 To update:
 
 ```bash
-dotnet tool update --global Amafu
+dotnet tool update --global Amafu --version 4.5.8
 ```
 
 *(Requires `~/.dotnet/tools` in your `$PATH`)*
@@ -144,13 +111,13 @@ dotnet tool update --global Amafu
 Install directly to `/usr/local/bin` so no `$PATH` modification is needed:
 
 ```bash
-sudo dotnet tool install Amafu --tool-path /usr/local/bin
+sudo dotnet tool install Amafu --tool-path /usr/local/bin --version 4.5.8
 ```
 
 To update:
 
 ```bash
-sudo dotnet tool update Amafu --tool-path /usr/local/bin
+sudo dotnet tool update Amafu --tool-path /usr/local/bin --version 4.5.8
 ```
 
 > **Note:** `sudo` is only required during installation and updates to write to `/usr/local/bin`. Running the installed CLI command never requires `sudo` or elevated privileges.
@@ -341,76 +308,5 @@ must create an ordinary user-owned configuration.
 ## Documentation
 
 - Foldable class and method reference: [API.md](https://github.com/Burkhardt/Amafu/blob/main/API.md)
-- Latest release notes: [Amafu_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.8.md)
 - Governing request:
   [CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR/CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md)
-
-<details>
-<summary><b>📜 Release History & Version Notes</b> (Click to expand)</summary>
-
-## 4.5.8
-
-Coordinated 4.5.8 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.8.md).
-
-## 4.5.7
-
-Coordinated 4.5.7 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.7.md).
-
-## 4.5.6
-
-Coordinated 4.5.6 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.6.md).
-
-## 4.5.5
-
-Coordinated 4.5.5 release; public behavior is aligned with the synchronized platform.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.5.md).
-
-## 4.5.4
-
-`amafu init --create-links` now writes `~/.CloudStorage/<provider>/` paths
-into the generated configuration. `--dry-run` previews those same paths without
-creating files or links. For an existing configuration, preview with
-`amafu reconcile`, then migrate with `amafu reconcile --apply` (with a backup).
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.4.md).
-
-## 4.5.3
-
-CR051 adds multiple Google Drive and corporate OneDrive accounts, deterministic
-personal OneDrive selection, account metadata, and noninteractive configuration
-reconciliation. OsLib must be updated alongside Amafu to recognize named roots.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.3.md).
-
-## 4.5.2
-
-Adds optional `--create-links` cloud shortcuts under `~/.CloudStorage` for `detect` and `init`, with read-only previews and preservation of existing paths.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.2.md).
-
-## 4.5.0
-
-Coordinated 4.5.0 release; cloud configuration behavior is unchanged.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.0.md).
-
-## 4.4.8
-
-Coordinated 4.4.8 release; cloud configuration behavior is unchanged.
-
-Release notes: [Amafu_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.8.md).
-
-## 4.4.6
-
-Participates in the synchronized 4.4.6 release; reports `amafu v4.4.6`. Cloud configuration behavior is unchanged.
-
-Release notes: [Amafu_RELEASE_NOTES_4.4.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.6.md).
-
-</details>
