@@ -144,6 +144,15 @@ jobs:
         with:
           path: artifacts/release
 
+      - name: Checkout synchronized release notes
+        uses: actions/checkout@v5
+        with:
+          repository: Burkhardt/RAIkeep
+          ref: ${{ github.ref_name }}
+          path: raikeep-release
+          persist-credentials: false
+          submodules: false
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -151,12 +160,15 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           VERSION="${TAG#v}"
-          NOTES="Amafu_RELEASE_NOTES_${VERSION}.md"
+          MAJOR="${VERSION%%.*}"
+          NOTES="raikeep-release/doc/releases/v${MAJOR}.x/Amafu_RELEASE_NOTES_${MAJOR}.x.md"
+          RELEASE_BODY="${RUNNER_TEMP}/Amafu-${VERSION}-release-notes.md"
+          python3 raikeep-release/scripts/extract-release-notes.py "${NOTES}" "${VERSION}" "${RELEASE_BODY}"
           if gh release view "${TAG}" >/dev/null 2>&1; then
             TITLE=$(gh release view "${TAG}" --json name --jq '.name')
             test "${TITLE}" = "Amafu ${TAG}"
           else
-            gh release create "${TAG}" --title "Amafu ${TAG}" --notes-file "${NOTES}"
+            gh release create "${TAG}" --title "Amafu ${TAG}" --notes-file "${RELEASE_BODY}"
           fi
 
       - name: Upload native release assets

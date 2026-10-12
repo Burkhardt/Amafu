@@ -13,70 +13,11 @@ This release prefers existing `~/.CloudStorage` shortcuts when creating a
 configuration. `amafu init --create-links` creates missing shortcuts and writes
 those clean paths into a new configuration.
 
-Latest release notes: [Amafu_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.8.md).
+Latest release notes: [Amafu 4.5.8 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#458).
 
-<details>
-<summary><b>Previous Versions</b></summary>
+## Previous Versions
 
-### Amafu v4.5.7
-
-Coordinated with the RAIkeep 4.5.7 release line; no Amafu behavior changed.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.7.md).
-
-### Amafu v4.5.6
-
-Coordinated with the RAIkeep 4.5.6 release line.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.6.md).
-
-### Amafu v4.5.5
-
-Coordinated package and dependency alignment; no independent Amafu behavior changed.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.5.md).
-
-### Amafu v4.5.4
-
-`amafu init --create-links` began writing the shortcuts it creates into a new
-configuration. Dry runs show the same paths without writing files or links.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.4.md).
-
-### Amafu v4.5.3
-
-Added multiple Google Drive and corporate OneDrive accounts, named shortcuts,
-deterministic personal OneDrive selection, and noninteractive reconciliation.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.3.md).
-
-### Amafu v4.5.2
-
-Added optional `--create-links` shortcuts under `~/.CloudStorage/` for
-detection and initial configuration.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.2.md).
-
-### Amafu v4.5.0
-
-Coordinated release; cloud-configuration behavior did not change.
-
-Release notes: [Amafu_RELEASE_NOTES_4.5.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.0.md).
-
-### Amafu v4.4.8
-
-Coordinated release; cloud-configuration behavior did not change.
-
-Release notes: [Amafu_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.8.md).
-
-### Amafu v4.4.6
-
-Participated in the synchronized CR049 release; cloud-configuration behavior
-did not change.
-
-Release notes: [Amafu_RELEASE_NOTES_4.4.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.6.md).
-
-</details>
+For release notes and changelogs of earlier releases, see the [Amafu 4.x Release Notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md).
 
 ## Installation
 
