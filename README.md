@@ -1,312 +1,165 @@
 # Amafu (`amafu`)
-> **Unified, stable cloud storage paths for macOS — with one command.**
-macOS CloudStorage buries your cloud drives in cryptic, fragile directory paths like:
-`~/Library/CloudStorage/GoogleDrive-user@domain.com/My Drive/GDriveData/`.
-Such paths can potentially break terminal scripts, clutter shell prompts, and change whenever Apple or Google updates their sync client.
-### Amafu solves this:
 
-```bash
-amafu init --create-links
-```
-in an _opinionated_ manner.
+Amafu finds locally synchronized cloud-storage roots and writes the shared
+`~/.config/RAIkeep.json5` configuration used by RAIkeep command-line tools. On
+macOS, it can also create stable shortcuts under `~/.CloudStorage/`, avoiding
+vendor-managed paths such as `~/Library/CloudStorage/GoogleDrive-…/My Drive/`.
 
-In less than a second, Amafu auto-detects all your active cloud accounts and creates clean, predictable symlinks under `~/.CloudStorage/`:
+Cloud detection is supported on macOS. Commands do not move cloud data.
 
-- `~/.CloudStorage/GoogleDrive`
-- `~/.CloudStorage/OneDrive`
-- `~/.CloudStorage/Dropbox`
-- `~/.CloudStorage/ICloudDrive`
+## Amafu v4.5.8
 
-One predictable path across all your machines, shell scripts, and AI agents.
-
-Zero external runtime dependencies (C# NativeAOT compiled binary). Fully
-non-destructive (previews with `--dry-run`). Generates shared cross-platform
-configuration for the entire RAIkeep platform.
-
-Once a clean provider directory or shortcut exists, a later plain `amafu init`
-prefers it over a vendor-managed path and records that clean path in
-`~/.config/RAIkeep.json5`.
-
-**Amafu** (*amafu*: isiZulu, “clouds”) is the standalone RAIkeep cloud-storage
-discovery and configuration bootstrap utility. Its installed command is `amafu`.
-
-## Latest Version 4.5.8
-
-Cloud storage discovery, clean shortcut creation, and shared RAIkeep configuration.
+This release prefers existing `~/.CloudStorage` shortcuts when creating a
+configuration. `amafu init --create-links` creates missing shortcuts and writes
+those clean paths into a new configuration.
 
 Latest release notes: [Amafu_RELEASE_NOTES_4.5.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.8.md).
 
 <details>
 <summary><b>Previous Versions</b></summary>
 
-Earlier coordinated releases are recorded in the [RAIkeep release-note archive](https://github.com/Burkhardt/RAIkeep/tree/main/doc).
+### Amafu v4.5.7
+
+Coordinated with the RAIkeep 4.5.7 release line; no Amafu behavior changed.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.7.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.7.md).
+
+### Amafu v4.5.6
+
+Coordinated with the RAIkeep 4.5.6 release line.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.6.md).
+
+### Amafu v4.5.5
+
+Coordinated package and dependency alignment; no independent Amafu behavior changed.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.5.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.5.md).
+
+### Amafu v4.5.4
+
+`amafu init --create-links` began writing the shortcuts it creates into a new
+configuration. Dry runs show the same paths without writing files or links.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.4.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.4.md).
+
+### Amafu v4.5.3
+
+Added multiple Google Drive and corporate OneDrive accounts, named shortcuts,
+deterministic personal OneDrive selection, and noninteractive reconciliation.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.3.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.3.md).
+
+### Amafu v4.5.2
+
+Added optional `--create-links` shortcuts under `~/.CloudStorage/` for
+detection and initial configuration.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.2.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.2.md).
+
+### Amafu v4.5.0
+
+Coordinated release; cloud-configuration behavior did not change.
+
+Release notes: [Amafu_RELEASE_NOTES_4.5.0.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.5.0.md).
+
+### Amafu v4.4.8
+
+Coordinated release; cloud-configuration behavior did not change.
+
+Release notes: [Amafu_RELEASE_NOTES_4.4.8.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.8.md).
+
+### Amafu v4.4.6
+
+Participated in the synchronized CR049 release; cloud-configuration behavior
+did not change.
+
+Release notes: [Amafu_RELEASE_NOTES_4.4.6.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/Amafu_RELEASE_NOTES_4.4.6.md).
 
 </details>
 
+## Installation
+
+The installer handles **Amafu only**. Pass the release number explicitly so the
+installed command is reproducible.
+
+### Native binary, without .NET
+
+Installs the matching macOS or Linux native release binary in `/usr/local/bin`.
+It requires `curl`, `unzip`, and administrator permission.
+
 ```bash
-AMAFU_VERSION=4.5.8
-case "$(uname -s)-$(uname -m)" in
-  Darwin-arm64) AMAFU_RID=osx-arm64 ;;
-  Darwin-x86_64) AMAFU_RID=osx-x64 ;;
-  Linux-aarch64|Linux-arm64) AMAFU_RID=linux-arm64 ;;
-  Linux-x86_64) AMAFU_RID=linux-x64 ;;
-  *) echo "Unsupported Amafu platform: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
-esac
-AMAFU_INSTALL_DIR="$(mktemp -d)"
-AMAFU_ARCHIVE="amafu-v${AMAFU_VERSION}-${AMAFU_RID}.zip"
-curl --fail --location \
-  "https://github.com/Burkhardt/Amafu/releases/download/v${AMAFU_VERSION}/${AMAFU_ARCHIVE}" \
-  --output "${AMAFU_INSTALL_DIR}/${AMAFU_ARCHIVE}"
-curl --fail --location \
-  "https://github.com/Burkhardt/Amafu/releases/download/v${AMAFU_VERSION}/${AMAFU_ARCHIVE}.sha256" \
-  --output "${AMAFU_INSTALL_DIR}/${AMAFU_ARCHIVE}.sha256"
-if command -v sha256sum >/dev/null 2>&1; then
-  (cd "${AMAFU_INSTALL_DIR}" && sha256sum --check "${AMAFU_ARCHIVE}.sha256")
-else
-  (cd "${AMAFU_INSTALL_DIR}" && shasum -a 256 --check "${AMAFU_ARCHIVE}.sha256")
-fi
-unzip -q "${AMAFU_INSTALL_DIR}/${AMAFU_ARCHIVE}" -d "${AMAFU_INSTALL_DIR}"
-sudo install -m 0755 "${AMAFU_INSTALL_DIR}/amafu" /usr/local/bin/amafu
-amafu --version
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.5.8
 ```
-
-`sudo` is used only by the OS installation command that writes
-`/usr/local/bin`; never run `sudo amafu init`.
-
-Published targets:
-
-- macOS ARM64 and x64;
-- Linux ARM64 and x64;
-- Windows x64.
-
-## Platform support in 4.5.8
-
-Automatic cloud-provider discovery is supported and tested on **macOS only** in
-this release. The Linux and Windows binaries are provided so the native command,
-help, diagnostics, and starter-template fallback are available without a .NET
-runtime, but provider-specific discovery on those operating systems is not yet
-implemented or claimed as supported. Linux and Windows detection will be added
-and tested in a later release.
 
 ### .NET global tool
 
-## Installation
-
-### 1. User Global Tool Install
-
-```bash
-dotnet tool install --global Amafu --version 4.5.8
-```
-
-To update:
+Installs the Amafu tool for the current user in the normal .NET global-tools
+location. Use this when that directory is already on your `PATH`.
 
 ```bash
-dotnet tool update --global Amafu --version 4.5.8
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.5.8
 ```
 
-*(Requires `~/.dotnet/tools` in your `$PATH`)*
+### .NET tool in `/usr/local/bin`
 
-### 2. Direct Install to `/usr/local/bin` (Recommended for macOS & Linux)
-
-Install directly to `/usr/local/bin` so no `$PATH` modification is needed:
+Installs the Amafu tool in `/usr/local/bin`, avoiding a per-user tool directory
+on `PATH`. It requires .NET and administrator permission.
 
 ```bash
-sudo dotnet tool install Amafu --tool-path /usr/local/bin --version 4.5.8
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.5.8
 ```
 
-To update:
-
-```bash
-sudo dotnet tool update Amafu --tool-path /usr/local/bin --version 4.5.8
-```
-
-> **Note:** `sudo` is only required during installation and updates to write to `/usr/local/bin`. Running the installed CLI command never requires `sudo` or elevated privileges.
+Do not run `amafu` itself with `sudo`; it should use the ordinary user's cloud
+folders and configuration.
 
 ## Commands
 
-### Account discovery and reconciliation (4.5.3)
+### `detect`
 
-Amafu discovers every Google Drive account and each corporate OneDrive root.
-For example, `GoogleDrive-rainer.burkhardt@gmail.com` becomes
-`GoogleDriveRainer`, and `GoogleDrive-yebo@umshadisi.com` becomes
-`GoogleDriveYebo`. Each account independently uses its existing `GDriveData`
-subfolder, or `My Drive` when that subfolder is absent. Corporate roots such as
-`OneDrive-AfricaStage` and `OneDrive - Contoso` become `OneDriveAfricaStage` and
-`OneDriveContoso`. Dropbox and iCloud discovery retain their previous behavior.
+Inspect the cloud roots Amafu finds without changing the machine:
 
-Exactly one personal OneDrive root is selected under the `OneDrive` key:
+```bash
+amafu detect
+```
 
-1. An explicit `--onedrive-personal` folder name or path wins.
-2. Otherwise, keep an existing valid configured personal root.
-3. Otherwise, choose the longest folder name among `OneDrive` and
-   `OneDrive-Personal*`; ties use the highest numeric suffix, then ordinal path
-   order. Thus `OneDrive-Personal(9)` wins over `OneDrive-Personal(2)` when there
-   is no configured preference. This is a naming heuristic, not a test of which
-   account is newest or currently syncing.
-
-All detected corporate accounts are retained. No interactive prompt is used.
-The selected personal root is visible in output; other checked paths are also
-listed. Override the selection explicitly when needed:
+Use `--json` when another program needs the result. With more than one personal
+OneDrive root, select one deterministically for this run:
 
 ```bash
 amafu detect --onedrive-personal 'OneDrive-Personal(2)' --json
 ```
 
-Detection JSON keeps `name` and `path`, and adds `provider` and `account` when
-known. Names are stable when accounts are added. Case-insensitive account-name
-collisions report both roots and fail before writes. Google short names use the
-part before the first `.` or `@`, strip non-ASCII-alphanumerics, then capitalize
-its initial letter. Empty names fail. Duplicate aliases of one root are folded.
+### `init`
 
-To discover additional accounts and propose switching an existing configuration
-to the `~/.CloudStorage` shortcuts:
+For a new machine, create clean shortcuts and the initial configuration:
 
 ```bash
-amafu reconcile                       # preview only, no writes
-amafu reconcile --apply               # back up, create shortcuts, update config
-
-# Select a different personal OneDrive noninteractively:
-amafu reconcile --onedrive-personal 'OneDrive-Personal(2)'
-amafu reconcile --onedrive-personal 'OneDrive-Personal(2)' --apply
+amafu init --create-links
 ```
 
-Reconciliation retains existing settings and default order, adding newly
-found roots. A second label for an already configured root is not added to the
-scan order again. Unknown or unavailable configured roots are retained. The
-`Cloud` and `DefaultCloudOrder` sections are reformatted; unrelated JSON5 text
-(including its comments and custom settings) stays intact. Unsupported or
-ambiguous input fails without rewriting it. The original configuration is saved
-as `RAIkeep.json5.before-reconcile-<timestamp>-<unique suffix>` before applying.
-The final configuration replacement uses a sibling temporary file and preserves
-its Unix permissions.
+Preview the exact result first with `--dry-run`. `init` preserves an existing
+configuration unless `--force` is supplied.
 
-Ordinary link creation never replaces existing paths. Reconciliation may
-repoint the `OneDrive` symbolic link only for an explicit personal selection,
-only when that link matches the previously configured root, and only with
-`--apply`. Other conflicts fail before writes. No provider data is moved or
-removed. If a later write fails, the backup remains and successfully created
-new shortcuts may remain; rerun the preview before retrying.
+### `reconcile`
 
-Use the corresponding updated OsLib consumers before switching configuration
-keys or paths: older OsLib releases recognized only four literal cloud keys.
-Restart long-running OsLib consumers after applying a configuration change; their
-configuration snapshot is captured at startup. Amafu owns discovery and configuration
-generation; Os.Config consumes all path
-entries in `Cloud`, while `DefaultCloudOrder` governs selection and preference.
-
-### Cloud shortcuts (4.5.2)
-
-Opt in to short cloud paths with `--create-links`:
+For an existing configuration, preview additional detected roots and any move
+to shortcut paths:
 
 ```bash
-amafu detect --create-links --dry-run  # preview without writing
-amafu detect --create-links           # create missing shortcuts
+amafu reconcile
 ```
 
-For example, when these provider roots are detected:
-
-```text
-~/.CloudStorage/GoogleDrive -> ~/Library/CloudStorage/GoogleDrive-user@example.com/My Drive/
-~/.CloudStorage/ICloudDrive -> ~/Library/Mobile Documents/com~apple~CloudDocs/
-```
-
-Amafu creates `~/.CloudStorage` when needed and creates symbolic links for
-detected providers, including OneDrive and Dropbox. The cloud files stay at
-their original locations. Links use the root selected by detection, including
-an existing provider data subfolder such as `OneDriveData`, when applicable.
-Missing provider roots are not created: a new local directory alone would not
-configure a cloud client.
-
-Repeated runs reuse matching links. An existing file, directory, or link to a
-different target causes an error; `--force` does not replace shortcuts. All link
-destinations are checked before creation. If a later filesystem operation
-fails, links already created are retained and the command can be retried.
-
-Use `amafu init --create-links` to create shortcuts along with a new
-configuration that uses `~/.CloudStorage/<provider>/` paths. Preview that exact
-configuration with `amafu init --create-links --dry-run`; no links or files are
-created during a dry run. Plain `amafu init` prefers an existing clean provider
-path, then falls back to the detected real root.
-`detect --json` continues to report real provider paths, and
-`detect --create-links --json` creates shortcuts while keeping stdout valid JSON.
-To migrate an existing configuration while preserving its other settings, use
-`amafu reconcile` to preview and `amafu reconcile --apply` to apply with a backup.
-
-#### Finder Favorites on macOS
-
-After creating the shortcuts, open their directory in your graphical login
-session:
+Apply the preview only after review:
 
 ```bash
-open "$HOME/.CloudStorage"
+amafu reconcile --apply
 ```
 
-Drag the desired provider folders into Finder's Favorites sidebar. This adds
-convenient access without moving cloud data; see
-[Apple's Finder sidebar guide](https://support.apple.com/en-gb/guide/mac-help/mchl83c9e8b8/mac).
-Amafu does not currently change Finder Favorites automatically.
+Amafu creates a backup before changing an existing configuration. It does not
+move or delete provider data.
 
-### Detection and configuration
+## Terminal Font
 
-Inspect detected providers without writing:
-
-```bash
-amafu detect
-amafu detect --json
-```
-
-Preview the generated JSON5 without creating any directory or file:
-
-```bash
-amafu init --dry-run
-```
-
-Create the configuration:
-
-```bash
-amafu init
-```
-
-`amafu init-config` is an alias for `amafu init`.
-
-Amafu refuses to replace an existing configuration. Regeneration must be
-explicit:
-
-```bash
-amafu init --force
-```
-
-Do not run Amafu with `sudo`. It must use the ordinary user's home directory and
-must create an ordinary user-owned configuration.
-
-## Safety boundary
-
-- Detection is read-only unless `--create-links` is supplied, and never creates
-  cloud-provider roots. Shortcut creation does not overwrite existing paths.
-- Provider auto-detection is supported and tested only on macOS in 4.5.8;
-  other platforms receive the explicit starter-template fallback.
-- Dry run performs zero filesystem writes.
-- An existing configuration is byte-for-byte preserved without `--force`.
-- No file or directory is staged in a temp directory and moved into cloud
-  storage.
-- Tests use explicit fixture homes and never modify the operator's real
-  `~/.config/RAIkeep.json5`.
-- Amafu's internal model is `AmafuConfiguration`; it does not define an
-  `Os.Config` or `OsConfig` type.
-
-## Terminal font
-
-> **Font note:** The `amafu` help screen uses glyph icons from Nerd Fonts. Most
-> Nerd Font-patched fonts render correctly in most terminal environments. Blink
-> on iPadOS showed clipping and character-width problems with some choices; the
-> tested solution was Blink's
-> [Jet Brains Mono Nerd Font stylesheet](https://github.com/blinksh/patched-fonts/blob/main/Jet%20Brains%20Mono%20Nerd%20Font.css).
-> See the RAIkeep
-> [terminal font guide](https://github.com/Burkhardt/RAIkeep/blob/main/doc/TERMINAL_FONTS.md)
-> for Blink, macOS, and Ubuntu setup.
-
-## Documentation
-
-- Foldable class and method reference: [API.md](https://github.com/Burkhardt/Amafu/blob/main/API.md)
-- Governing request:
-  [CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md](https://github.com/Burkhardt/RAIkeep/blob/main/doc/CR/CR044_AIA_and_jsonpit_to_RAIkeep_Auto-Detect-Cloud-Drives-and-Init-Config.md)
+The `amafu` help screen uses Nerd Font glyphs. The tested choice for Blink on
+iPadOS is the [JetBrains Mono Nerd Font stylesheet](https://github.com/blinksh/patched-fonts/blob/main/Jet%20Brains%20Mono%20Nerd%20Font.css). The [terminal font guide](https://github.com/Burkhardt/RAIkeep/blob/main/doc/TERMINAL_FONTS.md) also covers macOS and Ubuntu.
