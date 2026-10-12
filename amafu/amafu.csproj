@@ -33,7 +33,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="../README.md" Pack="true" PackagePath="\" Link="README.md" />
+		<None Include="../README.NuGet.md" Pack="true" PackagePath="README.md" />
 		<None Include="../HardCastle.png" Pack="true" PackagePath="\" Link="HardCastle.png" />
 	</ItemGroup>
 
