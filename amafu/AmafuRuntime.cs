@@ -9,7 +9,8 @@ internal sealed record AmafuRuntime(
 	bool IsElevated,
 	int TerminalWidth,
 	TextWriter Output,
-	TextWriter Error)
+	TextWriter Error,
+	string LinuxServerDataDirectory = "/srv/ServerData")
 {
 	internal static AmafuRuntime FromEnvironment()
 	{

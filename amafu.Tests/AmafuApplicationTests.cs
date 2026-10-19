@@ -75,6 +75,41 @@ public sealed class AmafuApplicationTests
 	}
 
 	[Fact]
+	public void Detect_LinuxJsonDryRunReportsMountedRootsWithoutWriting()
+	{
+		using var fixture = new TestDirectory();
+		var oneDrive = fixture.CreateDirectory("srv", "ServerData", "OneDriveData");
+		var google = fixture.CreateDirectory("srv", "ServerData", "GDriveData");
+		var output = new StringWriter();
+		var runtime = TestRuntime.Create(fixture.FullPath, AmafuPlatform.Linux, output: output);
+
+		Assert.Equal(0, AmafuApplication.Run(["detect", "--json", "--dry-run"], runtime));
+
+		var json = System.Text.Json.JsonDocument.Parse(output.ToString());
+		var providers = json.RootElement.GetProperty("providers").EnumerateArray().ToArray();
+		Assert.Contains(providers, provider => provider.GetProperty("name").GetString() == "OneDrive"
+			&& provider.GetProperty("path").GetString() == AmafuConfigurationRenderer.ToPortablePath(oneDrive, fixture.FullPath));
+		Assert.Contains(providers, provider => provider.GetProperty("name").GetString() == "GoogleDrive"
+			&& provider.GetProperty("path").GetString() == AmafuConfigurationRenderer.ToPortablePath(google, fixture.FullPath));
+		Assert.False(File.Exists(runtime.ConfigurationFile));
+	}
+
+	[Fact]
+	public void Init_LinuxCreateLinksUsesMountedRootThroughShortcut()
+	{
+		using var fixture = new TestDirectory();
+		var oneDrive = fixture.CreateDirectory("srv", "ServerData", "OneDriveData");
+		var runtime = TestRuntime.Create(fixture.FullPath, AmafuPlatform.Linux);
+
+		Assert.Equal(0, AmafuApplication.Run(["init", "--create-links"], runtime));
+
+		var shortcut = Path.Combine(fixture.FullPath, ".CloudStorage", "OneDrive");
+		Assert.Equal(oneDrive, new DirectoryInfo(shortcut).ResolveLinkTarget(true)?.FullName);
+		Assert.Contains("\"OneDrive\": \"~/.CloudStorage/OneDrive/\"",
+			File.ReadAllText(runtime.ConfigurationFile));
+	}
+
+	[Fact]
 	public void Init_CreatesConfigurationWithUserOnlyWritePermission()
 	{
 		using var fixture = new TestDirectory();

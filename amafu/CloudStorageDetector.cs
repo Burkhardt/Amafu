@@ -7,6 +7,8 @@ internal static class CloudStorageDetector
 		var providers = new List<DetectedCloudProvider>();
 		var checkedPaths = new List<string>();
 
+		if (runtime.Platform == AmafuPlatform.Linux)
+			return DetectLinux(runtime, providers, checkedPaths);
 		if (runtime.Platform != AmafuPlatform.MacOS)
 			return new CloudDetectionResult(providers, checkedPaths);
 
@@ -96,6 +98,76 @@ internal static class CloudStorageDetector
 			.OrderBy(p => p.Provider == "OneDrive" && p.Account == "Personal" ? 0 : 1)
 			.ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
 			.ThenBy(p => p.RootPath, StringComparer.Ordinal).ToArray(), DistinctPaths(checkedPaths));
+	}
+
+	private static CloudDetectionResult DetectLinux(
+		AmafuRuntime runtime, List<DetectedCloudProvider> providers, List<string> checkedPaths)
+	{
+		var shortcuts = Path.Combine(runtime.HomeDirectory, ".CloudStorage");
+		foreach (var family in new[] { "OneDrive", "Dropbox", "GoogleDrive", "ICloudDrive" })
+		{
+			var aliases = family == "OneDrive"
+				? new[] { "OneDrive", "OneDrivePersonal" }
+				: new[] { family };
+			foreach (var alias in aliases)
+			{
+				var name = alias == "OneDrivePersonal" ? "OneDrive" : alias;
+				AddShortcutIfExisting(providers, checkedPaths, name, Path.Combine(shortcuts, alias),
+					family, family == "OneDrive" ? "Personal" : null);
+			}
+		}
+		foreach (var shortcut in EnumerateDirectories(shortcuts, "*", checkedPaths))
+		{
+			var name = Path.GetFileName(shortcut);
+			var family = ProviderFamily(name);
+			if (family is null || HasProvider(providers, name)) continue;
+			AddShortcutIfExisting(providers, checkedPaths, name, shortcut, family, null);
+		}
+
+		if (File.Exists(runtime.ConfigurationFile))
+		{
+			var configured = new ConfigurationDocument(File.ReadAllText(runtime.ConfigurationFile)).CloudPaths();
+			foreach (var (name, path) in configured)
+			{
+				var family = ProviderFamily(name);
+				if (family is null || HasProvider(providers, name)) continue;
+				var expanded = path.StartsWith("~/", StringComparison.Ordinal)
+					? Path.Combine(runtime.HomeDirectory, path[2..]) : path;
+				if (!Path.IsPathFullyQualified(expanded)) continue;
+				AddLinuxRoot(providers, checkedPaths, name, expanded, family);
+			}
+		}
+
+		foreach (var (name, directory) in new[]
+		{
+			("OneDrive", "OneDriveData"), ("Dropbox", "DropboxData"),
+			("GoogleDrive", "GDriveData"), ("ICloudDrive", "ICloudDriveData")
+		})
+		{
+			var candidate = Path.Combine(runtime.LinuxServerDataDirectory, directory);
+			checkedPaths.Add(candidate);
+			if (!HasProvider(providers, name))
+				AddLinuxRoot(providers, checkedPaths, name, candidate, name);
+		}
+		return new CloudDetectionResult(providers
+			.OrderBy(p => p.Name == "OneDrive" ? 0 : 1)
+			.ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+			.ThenBy(p => p.RootPath, StringComparer.Ordinal).ToArray(), DistinctPaths(checkedPaths));
+	}
+
+	private static string? ProviderFamily(string name)
+		=> new[] { "OneDrive", "Dropbox", "GoogleDrive", "ICloudDrive" }
+			.FirstOrDefault(family => name.StartsWith(family, StringComparison.OrdinalIgnoreCase));
+
+	private static void AddLinuxRoot(List<DetectedCloudProvider> providers, List<string> checkedPaths,
+		string name, string root, string family)
+	{
+		checkedPaths.Add(root);
+		if (!DirectoryExists(root)) return;
+		var canonical = CanonicalDirectory(root);
+		if (providers.Any(provider => string.Equals(CanonicalDirectory(provider.RootPath), canonical, StringComparison.Ordinal))) return;
+		providers.Add(new DetectedCloudProvider(name, Path.GetFullPath(root), family,
+			family == "OneDrive" && name == "OneDrive" ? "Personal" : null));
 	}
 
 	private static bool HasProvider(IEnumerable<DetectedCloudProvider> providers, string name)
@@ -287,7 +359,7 @@ internal static class CloudStorageDetector
 	private static string[] DistinctPaths(IEnumerable<string> paths)
 		=> paths
 			.Where(path => !string.IsNullOrWhiteSpace(path))
-			.Select(Path.GetFullPath)
+			.Select(path => Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)))
 			.Distinct(StringComparer.Ordinal)
 			.ToArray();
 }

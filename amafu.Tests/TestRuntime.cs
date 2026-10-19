@@ -9,13 +9,15 @@ internal static class TestRuntime
 		int width = 120,
 		StringWriter? output = null,
 		StringWriter? error = null,
-		string? sharedGoogleDriveCandidate = null)
+		string? sharedGoogleDriveCandidate = null,
+		string? linuxServerDataDirectory = null)
 		=> new(
 			home,
 			platform,
 			sharedGoogleDriveCandidate ?? Path.Combine(home, "Shared", "ServerData", "GDriveData"),
 			elevated,
 			width,
-			output ?? new StringWriter(),
-			error ?? new StringWriter());
+		output ?? new StringWriter(),
+		error ?? new StringWriter(),
+		linuxServerDataDirectory ?? Path.Combine(home, "srv", "ServerData"));
 }

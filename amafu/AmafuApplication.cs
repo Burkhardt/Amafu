@@ -77,7 +77,7 @@ internal static class AmafuApplication
 		if (result.Providers.Count == 0)
 		{
 			runtime.Output.WriteLine("No supported cloud-storage provider was detected. No directory was created.");
-			if (runtime.Platform != AmafuPlatform.MacOS)
+			if (runtime.Platform is not (AmafuPlatform.MacOS or AmafuPlatform.Linux))
 				runtime.Output.WriteLine($"Automatic provider discovery is not yet defined for {runtime.Platform}.");
 		}
 		else

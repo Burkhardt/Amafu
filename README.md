@@ -1,17 +1,18 @@
 # Amafu (`amafu`)
 
 Amafu finds locally synchronized cloud-storage roots and writes the shared
-`~/.config/RAIkeep.json5` configuration used by RAIkeep command-line tools. On
-macOS, it can also create stable shortcuts under `~/.CloudStorage/`, avoiding
-vendor-managed paths such as `~/Library/CloudStorage/GoogleDrive-…/My Drive/`.
+`~/.config/RAIkeep.json5` configuration used by RAIkeep command-line tools. It
+can also create stable shortcuts under `~/.CloudStorage/`, avoiding vendor-managed
+macOS paths such as `~/Library/CloudStorage/GoogleDrive-…/My Drive/`.
 
-Cloud detection is supported on macOS. Commands do not move cloud data.
+Cloud detection is supported on macOS and Linux. Commands do not move cloud data.
 
 ## Amafu v4.5.11
 
-This release prefers existing `~/.CloudStorage` shortcuts when creating a
-configuration. `amafu init --create-links` creates missing shortcuts and writes
-those clean paths into a new configuration.
+On Linux, discovery checks existing `~/.CloudStorage/` shortcuts, valid cloud
+roots in `~/.config/RAIkeep.json5`, and `/srv/ServerData/*Data` mounts. This
+includes Mzansi's OneDrive, Google Drive, Dropbox, and iCloud Drive mounts.
+`amafu init --create-links` can write clean shortcuts into a new configuration.
 
 Latest release notes: [Amafu 4.5.11 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#4511).
 
@@ -62,6 +63,12 @@ Inspect the cloud roots Amafu finds without changing the machine:
 
 ```bash
 amafu detect
+```
+
+On Ubuntu, preview the mounted roots as JSON without writing anything:
+
+```bash
+amafu detect --json --dry-run
 ```
 
 Use `--json` when another program needs the result. With more than one personal

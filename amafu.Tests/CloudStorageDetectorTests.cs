@@ -137,11 +137,43 @@ public sealed class CloudStorageDetectorTests
 			result.Providers.Select(provider => provider.Name));
 	}
 
+	[Fact]
+	public void Detect_LinuxFindsMountedServerDataRoots()
+	{
+		using var fixture = new TestDirectory();
+		var serverData = fixture.CreateDirectory("srv", "ServerData");
+		foreach (var directory in new[] { "OneDriveData", "GDriveData", "DropboxData", "ICloudDriveData" })
+			fixture.CreateDirectory("srv", "ServerData", directory);
+
+		var result = CloudStorageDetector.Detect(TestRuntime.Create(fixture.FullPath, AmafuPlatform.Linux));
+
+		Assert.Equal(["OneDrive", "Dropbox", "GoogleDrive", "ICloudDrive"],
+			result.Providers.Select(provider => provider.Name));
+		Assert.Equal(Path.Combine(serverData, "OneDriveData"), result.Providers[0].RootPath);
+		Assert.Contains(Path.Combine(serverData, "GDriveData"), result.CheckedPaths);
+	}
+
+	[Fact]
+	public void Detect_LinuxPrefersShortcutsThenConfiguredRoots()
+	{
+		using var fixture = new TestDirectory();
+		var shortcut = fixture.CreateDirectory(".CloudStorage", "OneDrive");
+		fixture.CreateDirectory("srv", "ServerData", "OneDriveData");
+		var google = fixture.CreateDirectory("mounted", "GooglePhotos");
+		var config = fixture.CreateDirectory(".config");
+		File.WriteAllText(Path.Combine(config, "RAIkeep.json5"),
+			"{ Cloud: { OneDrive: \"/missing/OneDrive\", GoogleDrive: \"" + google + "\" } }");
+
+		var result = CloudStorageDetector.Detect(TestRuntime.Create(fixture.FullPath, AmafuPlatform.Linux));
+
+		Assert.Equal(shortcut, result.Providers.Single(provider => provider.Name == "OneDrive").RootPath);
+		Assert.Equal(google, result.Providers.Single(provider => provider.Name == "GoogleDrive").RootPath);
+	}
+
 	[Theory]
-	[InlineData((int)AmafuPlatform.Linux)]
 	[InlineData((int)AmafuPlatform.Windows)]
 	[InlineData((int)AmafuPlatform.Other)]
-	public void Detect_NonMacPlatformsDoNotAssumeCloudRoots(int platformValue)
+	public void Detect_UnsupportedPlatformsDoNotAssumeCloudRoots(int platformValue)
 	{
 		using var fixture = new TestDirectory();
 		fixture.CreateDirectory("Library", "CloudStorage", "OneDrive");
