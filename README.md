@@ -7,14 +7,13 @@ macOS paths such as `~/Library/CloudStorage/GoogleDrive-…/My Drive/`.
 
 Cloud detection is supported on macOS and Linux. Commands do not move cloud data.
 
-## Amafu v4.5.13
+## Amafu v4.5.14
 
-On Linux, discovery checks existing `~/.CloudStorage/` shortcuts, valid cloud
-roots in `~/.config/RAIkeep.json5`, and `/srv/ServerData/*Data` mounts. This
-includes Mzansi's OneDrive, Google Drive, Dropbox, and iCloud Drive mounts.
-`amafu init --create-links` can write clean shortcuts into a new configuration.
+Cloud detection behavior is unchanged. Native releases now use the current notes
+stored in the Amafu repository, so publishing their downloads does not depend on
+the umbrella release being tagged first.
 
-Latest release notes: [Amafu 4.5.13 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#4513).
+Latest release notes: [Amafu 4.5.14 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#4514).
 
 ## Previous Versions
 
@@ -31,7 +30,7 @@ Installs the matching macOS or Linux native release binary in `/usr/local/bin`.
 It requires `curl`, `unzip`, and administrator permission.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.5.13
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.5.14
 ```
 
 ### .NET global tool
@@ -40,7 +39,7 @@ Installs the Amafu tool for the current user in the normal .NET global-tools
 location. Use this when that directory is already on your `PATH`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.5.13
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.5.14
 ```
 
 ### .NET tool in `/usr/local/bin`
@@ -49,7 +48,7 @@ Installs the Amafu tool in `/usr/local/bin`, avoiding a per-user tool directory
 on `PATH`. It requires .NET and administrator permission.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.5.13
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.5.14
 ```
 
 Do not run `amafu` itself with `sudo`; it should use the ordinary user's cloud
