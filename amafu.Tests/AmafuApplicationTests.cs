@@ -14,8 +14,10 @@ public sealed class AmafuApplicationTests
 		Assert.Equal(0, exitCode);
 		Assert.Contains(" ─────────────────────────", output.ToString());
 		Assert.Contains(" Amafu Cloud Bootstrap CLI", output.ToString());
-		Assert.Contains("Commands:                 detect, init, reconcile", output.ToString());
-		Assert.Contains("-h, --help                print out all options", output.ToString());
+		Assert.Contains("Commands:".PadRight(19) + "     detect, init, reconcile", output.ToString());
+		Assert.DoesNotContain("\t", output.ToString());
+		Assert.DoesNotContain("\u001b", output.ToString(), StringComparison.Ordinal);
+		Assert.Contains("-h, --help".PadRight(19) + "     print out all options", output.ToString());
 	}
 
 	[Fact]
@@ -41,7 +43,7 @@ public sealed class AmafuApplicationTests
 
 		AmafuApplication.Run(["-h", "-n"], runtime);
 
-		Assert.Contains("-h, --help\n    print out all options", Normalize(output.ToString()));
+		Assert.Contains("-h, --help\n     print out all options", Normalize(output.ToString()));
 	}
 
 	[Theory]
@@ -55,7 +57,7 @@ public sealed class AmafuApplicationTests
 		var exitCode = AmafuApplication.Run([flag], TestRuntime.Create(fixture.FullPath, output: output));
 
 		Assert.Equal(0, exitCode);
-		Assert.Equal("amafu v4.5.14", output.ToString().Trim());
+		Assert.Equal("amafu v4.5.15", output.ToString().Trim());
 	}
 
 	[Fact]

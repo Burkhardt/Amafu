@@ -1,3 +1,5 @@
+using OsLib;
+
 namespace Amafu;
 
 internal static class CliHelp
@@ -15,7 +17,7 @@ internal static class CliHelp
 
 		if (string.Equals(command, "reconcile", StringComparison.OrdinalIgnoreCase))
 		{
-			output.WriteLine("amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]");
+			WriteSyntax(output, "amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]");
 			WriteRows(output, width,
 				[("--apply", OutputIcon.ToString(), "back up configuration, create shortcuts, and apply the previewed changes"),
 				 ("--dry-run", OutputIcon.ToString(), "preview only (the default); never prompt interactively"),
@@ -25,7 +27,7 @@ internal static class CliHelp
 
 		if (string.Equals(command, "detect", StringComparison.OrdinalIgnoreCase))
 		{
-			output.WriteLine("amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]");
+			WriteSyntax(output, "amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]");
 			output.WriteLine();
 			WriteRows(output, width,
 				[("--json", OutputIcon.ToString(), "print detected roots as JSON"),
@@ -38,7 +40,7 @@ internal static class CliHelp
 		if (string.Equals(command, "init", StringComparison.OrdinalIgnoreCase) ||
 			string.Equals(command, "init-config", StringComparison.OrdinalIgnoreCase))
 		{
-			output.WriteLine("amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]");
+			WriteSyntax(output, "amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]");
 			output.WriteLine();
 			WriteRows(output, width,
 				[("-f, --force", ForceIcon.ToString(), "overwrite an existing configuration"),
@@ -64,44 +66,20 @@ internal static class CliHelp
 			 ("Configuration", FolderIcon.ToString(), "~/.config/RAIkeep.json5")]);
 	}
 
+	private static void WriteSyntax(TextWriter output, string text)
+		=> output.WriteLine(CliHelpStyle.Syntax(text, "36", CliHelpStyle.UseColor(output)));
+
 	private static void WriteBanner(TextWriter output)
 	{
-		const string title = "Amafu Cloud Bootstrap CLI";
-		output.Write(BannerIcon);
-		output.Write(' ');
-		output.WriteLine(new string('─', title.Length));
-		output.Write(InfoIcon);
-		output.Write(' ');
-		output.WriteLine(title);
-		output.Write(BannerIcon);
-		output.Write(' ');
-		output.WriteLine(new string('─', title.Length));
+		var version = typeof(CliHelp).Assembly.GetName().Version?.ToString(3) ?? "unknown";
+		foreach (var line in CliHelpStyle.Banner($"{InfoIcon} Amafu Cloud Bootstrap CLI (amafu v{version})", CliHelpStyle.UseColor(output)))
+			output.WriteLine(line);
 	}
 
-	private static void WriteRows(
-		TextWriter output,
-		int width,
+	private static void WriteRows(TextWriter output, int width,
 		IEnumerable<(string Option, string Icon, string Description)> rows)
 	{
-		const int optionWidth = 24;
-		foreach (var (option, icon, description) in rows)
-		{
-			if (string.IsNullOrEmpty(description))
-			{
-				output.WriteLine(option);
-				continue;
-			}
-
-			var normal = $"{option.PadRight(optionWidth)}{icon}  {description}  ";
-			if (width >= 72 || normal.Length <= width)
-			{
-				output.WriteLine(normal);
-			}
-			else
-			{
-				output.WriteLine(option);
-				output.WriteLine($"  {icon}  {description}");
-			}
-		}
+		var table = rows.Select(row => new CliHelpStyle.Row(row.Option, row.Icon, row.Description));
+		foreach (var line in CliHelpStyle.Rows(table, CliHelpStyle.UseColor(output), width)) output.WriteLine(line);
 	}
 }
