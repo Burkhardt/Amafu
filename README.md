@@ -7,12 +7,12 @@ macOS paths such as `~/Library/CloudStorage/GoogleDrive-…/My Drive/`.
 
 Cloud detection is supported on macOS and Linux. Commands do not move cloud data.
 
-## Amafu v4.5.15
+## Amafu v4.5.16
 
 Help now follows the shared CLI theme with aligned columns, syntax colors, and
 a versioned bold heading. The native binary remains independent of a .NET runtime.
 
-Latest release notes: [Amafu 4.5.15 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#4515).
+Latest release notes: [Amafu 4.5.16 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#4516).
 
 ## Previous Versions
 
@@ -29,7 +29,7 @@ Installs the matching macOS or Linux native release binary in `/usr/local/bin`.
 It requires `curl`, `unzip`, and administrator permission.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.5.15
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.5.16
 ```
 
 ### .NET global tool
@@ -38,7 +38,7 @@ Installs the Amafu tool for the current user in the normal .NET global-tools
 location. Use this when that directory is already on your `PATH`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.5.15
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.5.16
 ```
 
 ### .NET tool in `/usr/local/bin`
@@ -47,7 +47,7 @@ Installs the Amafu tool in `/usr/local/bin`, avoiding a per-user tool directory
 on `PATH`. It requires .NET and administrator permission.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.5.15
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.5.16
 ```
 
 Do not run `amafu` itself with `sudo`; it should use the ordinary user's cloud
