@@ -78,16 +78,38 @@ amafu detect --onedrive-personal 'OneDrive-Personal(2)' --json
 
 ### `list`
 
-Show every setting in the current user's `~/.config/RAIkeep.json5`:
+Read selected settings from the current user's `~/.config/RAIkeep.json5`:
 
 ```bash
-amafu list all
+amafu list temp
+amafu list backup
+amafu list order all
+amafu list cloud all
+amafu list observer all
 ```
 
-The output is the saved JSON5 document, including cloud paths, observer settings,
-comments, and any other configured values. This reads the existing file without
-detecting providers or creating files or shortcuts. A missing configuration
-produces an error; use `amafu init` to create one.
+Named lookups print just a value and a newline, without colors or labels:
+
+```bash
+amafu list cloud OneDrive
+amafu list order OneDrive
+amafu list observer Mzansi
+```
+
+Paths are absolute with `~` expanded and a trailing directory separator. Order
+positions start at 1; a provider absent from `DefaultCloudOrder` returns `0`,
+even if it has a configured cloud path. Observer lookups return the configured
+SSH target without connecting to it.
+
+Collection output uses the shared provider glyphs and colors. Cloud tables use
+one leading tab, no colon after the provider name, and two tabs before each
+double-quoted path. Observer tables use space-aligned columns. Redirected output
+and `NO_COLOR` disable ANSI colors; scalar output is always undecorated.
+
+Use selector-specific help, for example `amafu list order -h`. The top-level
+`amafu list all` is rejected. Queries do not create directories, change the
+configuration, probe providers, or connect to observers. A missing or malformed
+configuration produces an error; use `amafu init` to create an initial file.
 
 ### `init`
 

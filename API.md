@@ -9,9 +9,13 @@ contracts instead of linking to bootstrap internals.
 
 Dispatches global flags and the `detect`, `list`, `init`, `init-config`, and `reconcile` verbs.
 Returns deterministic process exit codes and resolves no global configuration.
-`list all` prints the saved `~/.config/RAIkeep.json5` document verbatim, without
-provider discovery or filesystem writes. Missing configuration returns exit code
-4 and a diagnostic on stderr; unsupported arguments return exit code 2.
+`list temp|backup`, `list order <provider|all>`, `list cloud <provider|all>`, and
+`list observer <name|all>` read selected settings without provider discovery or
+filesystem writes. Scalars print only the value and a newline; collections use
+styled tables. Order positions are one-based, with `0` for an unlisted name.
+Missing/malformed configuration or an unknown cloud/observer returns exit code
+4 and a diagnostic on stderr; invalid syntax, including `list all`, returns 2.
+Each selector has context-specific help that works without a configuration file.
 
 - `Run(string[] args, AmafuRuntime runtime)` — executes one invocation against
   an explicit runtime context.

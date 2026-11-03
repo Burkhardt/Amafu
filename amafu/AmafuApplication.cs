@@ -19,7 +19,8 @@ internal static class AmafuApplication
 
 		if (help)
 		{
-			CliHelp.Write(runtime.Output, noLogo, runtime.TerminalWidth, command);
+			CliHelp.Write(runtime.Output, noLogo, runtime.TerminalWidth, command,
+				args.Where(argument => !argument.StartsWith("-", StringComparison.Ordinal)).Skip(1).FirstOrDefault());
 			return 0;
 		}
 
@@ -40,7 +41,7 @@ internal static class AmafuApplication
 			return command.ToLowerInvariant() switch
 			{
 				"detect" => Detect(args, runtime, command),
-				"list" => List(args, runtime, command),
+				"list" => ConfigurationListing.Run(args, runtime),
 				"init" or "init-config" => Initialize(args, runtime, command),
 				"reconcile" => Reconcile(args, runtime, command),
 				_ => UnknownCommand(command, runtime)
@@ -51,25 +52,6 @@ internal static class AmafuApplication
 			runtime.Error.WriteLine($"Cloud setup failed: {exception.Message}");
 			return 4;
 		}
-	}
-
-	private static int List(string[] args, AmafuRuntime runtime, string command)
-	{
-		if (!ValidateOptions(args, command, ["all", "-n", "--nologo"], runtime.Error)) return 2;
-		var positional = args.Where(argument => !argument.StartsWith("-", StringComparison.Ordinal)).ToArray();
-		if (positional.Length != 2 || positional[1] != "all")
-		{
-			runtime.Error.WriteLine("Use 'amafu list all' to show every setting in '~/.config/RAIkeep.json5'.");
-			return 2;
-		}
-		if (!File.Exists(runtime.ConfigurationFile))
-		{
-			runtime.Error.WriteLine("Configuration file not found at '~/.config/RAIkeep.json5'. Run 'amafu init' to create it.");
-			return 4;
-		}
-
-		runtime.Output.Write(File.ReadAllText(runtime.ConfigurationFile));
-		return 0;
 	}
 
 	private static int Detect(string[] args, AmafuRuntime runtime, string command)

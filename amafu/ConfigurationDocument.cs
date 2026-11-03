@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Amafu;
 
@@ -28,6 +29,54 @@ internal sealed class ConfigurationDocument
 		foreach (var (name, value) in cloud.Properties)
 			if (value.Text is not null && !string.IsNullOrWhiteSpace(value.Text)) result.Add(name, value.Text);
 		return result;
+	}
+
+	internal string Setting(string key) => String(Required(key), key);
+
+	internal IReadOnlyList<string> Order(bool required = true)
+	{
+		if (!required && !root.Properties!.ContainsKey("DefaultCloudOrder")) return [];
+		var node = Required("DefaultCloudOrder");
+		if (node.Items is null) throw new IOException("DefaultCloudOrder must be an array of strings.");
+		var names = node.Items.Select(item => String(item, "DefaultCloudOrder entry")).ToArray();
+		Unique(names);
+		return names;
+	}
+
+	internal IReadOnlyDictionary<string, string> ListingEntries(string key)
+	{
+		var node = Required(key);
+		var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		void Add(string name, string value)
+		{
+			if (string.IsNullOrWhiteSpace(name) || name.Any(char.IsControl)) throw new IOException($"Invalid configuration name in {key}.");
+			if (!result.TryAdd(name, value)) throw new IOException($"Ambiguous configuration name '{name}' in {key}.");
+		}
+		if (node.Properties is not null)
+		{
+			foreach (var (name, value) in node.Properties)
+				Add(name, key == "Observers" && value.Properties is not null
+					? String(Member(value, "SshTarget"), "SshTarget") : String(value, name));
+		}
+		else if (key == "Observers" && node.Items is not null)
+		{
+			foreach (var item in node.Items)
+				Add(String(Member(item, "Name"), "Observer Name"), String(Member(item, "SshTarget"), "SshTarget"));
+		}
+		else throw new IOException($"{key} must be an object" + (key == "Observers" ? " or an array of named observer objects." : "."));
+		return result;
+	}
+
+	private Node Required(string key) => Member(root, key);
+	private static Node Member(Node node, string key) => node.Properties is not null && node.Properties.TryGetValue(key, out var value)
+		? value : throw new IOException($"Missing configuration value '{key}'.");
+	private static string String(Node node, string key) => !string.IsNullOrWhiteSpace(node.Text)
+		&& !node.Text.Any(char.IsControl) ? node.Text : throw new IOException($"{key} must be a nonempty string without control characters.");
+	private static void Unique(IEnumerable<string> names)
+	{
+		var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var name in names)
+			if (!seen.Add(name)) throw new IOException($"Ambiguous configured order entry '{name}'.");
 	}
 
 	internal string Rewrite(IReadOnlyDictionary<string, string> paths, IReadOnlyList<string> addedNames)
@@ -135,7 +184,9 @@ internal sealed class ConfigurationDocument
 			var value = ReadString();
 			return new(start, position, value);
 		}
-		ReadAtom();
+		var atom = ReadAtom();
+		if (atom is not ("true" or "false" or "null") &&
+			!Regex.IsMatch(atom, @"^[+-]?(?:Infinity|NaN|0[xX][0-9a-fA-F]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)$", RegexOptions.CultureInvariant)) throw Invalid();
 		return new(start, position);
 	}
 	private string ReadAtom()
