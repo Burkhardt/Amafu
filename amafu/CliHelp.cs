@@ -130,7 +130,7 @@ internal static class CliHelp
 	private static void WriteBanner(TextWriter output)
 	{
 		var version = typeof(CliHelp).Assembly.GetName().Version?.ToString(3) ?? "unknown";
-		foreach (var line in CliHelpStyle.Banner($"{InfoIcon} Amafu Cloud Bootstrap CLI (amafu v{version})", CliHelpStyle.UseColor(output)))
+		foreach (var line in CliHelpStyle.Banner($"{InfoIcon} Amafu Cloud Bootstrap CLI (amafu v{version}) on {Environment.MachineName}", CliHelpStyle.UseColor(output)))
 			output.WriteLine(line);
 	}
 

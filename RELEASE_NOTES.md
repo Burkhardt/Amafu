@@ -1,10 +1,10 @@
-## 4.5.17
+## 4.5.18
 
-- Release version: `4.5.17`
-- Coordination tag: `v4.5.17`
+- Release version: `4.5.18`
+- Coordination tag: `v4.5.18`
 
 ### Highlights
-- Add read-only selectors for temporary and backup paths, provider order, cloud roots, and observer SSH targets. Named lookups return clean scalar values; collections use provider badges. Each cloud entry uses a provider line followed by one tab before its quoted path. Replace top-level list all with selector-specific help.
+- Show the executing machine as "on <machine>" in the CLI banner. Size both decorative rules to the complete heading, including the hostname; preserve bold cyan styling and plain redirected output.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.5.17` line.
+- Aligned with RAIkeep synchronized `4.5.18` line.
