@@ -101,7 +101,7 @@ internal static class CliHelp
 			WriteSyntax(output, "amafu list cloud <provider|all>");
 			WriteRows(output, width,
 				[("<provider>", FolderIcon.ToString(), "print only its configured absolute directory path; expand ~ and retain a trailing separator"),
-				 ("all", FolderIcon.ToString(), "list provider badges and double-quoted paths; one leading tab and two tabs before each path"),
+				 ("all", FolderIcon.ToString(), "list each provider badge at the left margin, then its double-quoted path on a new line with one leading tab"),
 				 ("Example", InfoIcon.ToString(), "'amafu list cloud all' shows every configured cloud without checking or creating directories")]);
 			return;
 		}

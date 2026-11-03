@@ -102,8 +102,8 @@ even if it has a configured cloud path. Observer lookups return the configured
 SSH target without connecting to it.
 
 Collection output uses the shared provider glyphs and colors. Cloud tables use
-one leading tab, no colon after the provider name, and two tabs before each
-double-quoted path. Observer tables use space-aligned columns. Redirected output
+the provider glyph and name at the left margin, followed by a newline and one
+tab before the double-quoted path. Observer tables use space-aligned columns. Redirected output
 and `NO_COLOR` disable ANSI colors; scalar output is always undecorated.
 
 Use selector-specific help, for example `amafu list order -h`. The top-level

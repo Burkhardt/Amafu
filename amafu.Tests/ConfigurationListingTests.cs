@@ -67,14 +67,14 @@ public sealed class ConfigurationListingTests
 	}
 
 	[Fact]
-	public void CloudAll_UsesExactTabsQuotesAndIncludesUnorderedEntries()
+	public void CloudAll_UsesTwoLinesPerProviderAndIncludesUnorderedEntries()
 	{
 		using var home = new TestDirectory();
 		var output = new StringWriter();
 		Assert.Equal(0, AmafuApplication.Run(["list", "cloud", "all"], Runtime(home, output, new StringWriter())));
 		var names = new[] {"OneDrive", "Dropbox", "GoogleDrive", "ICloudDrive", "Custom"};
 		var paths = new[] {"cloud OneDrive", "dropbox", "gdrive", "icloud", "custom"};
-		var expected = names.Select((name, index) => "\t" + CliHelpStyle.CloudGlyph(name, index + 1) + " " + name + "\t\t\""
+		var expected = names.Select((name, index) => CliHelpStyle.CloudGlyph(name, index + 1) + " " + name + Environment.NewLine + "\t\""
 			+ AmafuConfigurationRenderer.Escape(Path.Combine(home.FullPath, paths[index]) + Path.DirectorySeparatorChar) + "\"" + Environment.NewLine);
 		Assert.Equal(string.Concat(expected), output.ToString());
 		Assert.DoesNotContain("\u001b", output.ToString(), StringComparison.Ordinal);

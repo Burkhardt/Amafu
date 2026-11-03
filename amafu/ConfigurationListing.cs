@@ -53,8 +53,8 @@ internal static class ConfigurationListing
 				var ordered = document.Order(required: false).Where(entries.ContainsKey).ToList();
 				ordered.AddRange(entries.Keys.Where(key => !ordered.Contains(key, StringComparer.OrdinalIgnoreCase)));
 				payload = string.Join(Environment.NewLine, ordered.Select((provider, index) =>
-					"\t" + Provider(entries.Keys.First(key => string.Equals(key, provider, StringComparison.OrdinalIgnoreCase)), index, color)
-					+ "\t\t" + CliHelpStyle.Paint("\"" + AmafuConfigurationRenderer.Escape(Expand(entries[provider], runtime.HomeDirectory)) + "\"", "33", color)));
+					Provider(entries.Keys.First(key => string.Equals(key, provider, StringComparison.OrdinalIgnoreCase)), index, color)
+					+ Environment.NewLine + "\t" + CliHelpStyle.Paint("\"" + AmafuConfigurationRenderer.Escape(Expand(entries[provider], runtime.HomeDirectory)) + "\"", "33", color)));
 			}
 		}
 		runtime.Output.WriteLine(payload);
