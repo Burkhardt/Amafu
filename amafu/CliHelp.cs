@@ -15,6 +15,14 @@ internal static class CliHelp
 	{
 		if (!noLogo) WriteBanner(output);
 
+		if (string.Equals(command, "list", StringComparison.OrdinalIgnoreCase))
+		{
+			WriteSyntax(output, "amafu list all");
+			WriteRows(output, width,
+				[("all", FolderIcon.ToString(), "print all settings from ~/.config/RAIkeep.json5 without changing the file")]);
+			return;
+		}
+
 		if (string.Equals(command, "reconcile", StringComparison.OrdinalIgnoreCase))
 		{
 			WriteSyntax(output, "amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]");
@@ -51,8 +59,9 @@ internal static class CliHelp
 		}
 
 		WriteRows(output, width,
-			[("Commands:", InfoIcon.ToString(), "detect, init, reconcile"),
+			[("Commands:", InfoIcon.ToString(), "detect, list, init, reconcile"),
 			 ("  amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
+			 ("  amafu list all", string.Empty, string.Empty),
 			 ("  amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]", string.Empty, string.Empty),
 			 ("  amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
 			 ("-h, --help", HelpIcon.ToString(), "print out all options"),
@@ -62,8 +71,7 @@ internal static class CliHelp
 			 ("--dry-run", OutputIcon.ToString(), "preview detection or configuration without writing"),
 			 ("--json", OutputIcon.ToString(), "print machine-readable cloud detection"),
 			 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
-				 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts"),
-			 ("Configuration", FolderIcon.ToString(), "~/.config/RAIkeep.json5")]);
+			 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts")]);
 	}
 
 	private static void WriteSyntax(TextWriter output, string text)

@@ -76,6 +76,19 @@ OneDrive root, select one deterministically for this run:
 amafu detect --onedrive-personal 'OneDrive-Personal(2)' --json
 ```
 
+### `list`
+
+Show every setting in the current user's `~/.config/RAIkeep.json5`:
+
+```bash
+amafu list all
+```
+
+The output is the saved JSON5 document, including cloud paths, observer settings,
+comments, and any other configured values. This reads the existing file without
+detecting providers or creating files or shortcuts. A missing configuration
+produces an error; use `amafu init` to create one.
+
 ### `init`
 
 For a new machine, create clean shortcuts and the initial configuration:

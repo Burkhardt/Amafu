@@ -14,7 +14,9 @@ public sealed class AmafuApplicationTests
 		Assert.Equal(0, exitCode);
 		Assert.Contains(" ─────────────────────────", output.ToString());
 		Assert.Contains(" Amafu Cloud Bootstrap CLI", output.ToString());
-		Assert.Contains("Commands:".PadRight(19) + "     detect, init, reconcile", output.ToString());
+		Assert.Contains("Commands:".PadRight(19) + "     detect, list, init, reconcile", output.ToString());
+		Assert.Contains("amafu list all", output.ToString());
+		Assert.DoesNotContain("Configuration", output.ToString());
 		Assert.DoesNotContain("\t", output.ToString());
 		Assert.DoesNotContain("\u001b", output.ToString(), StringComparison.Ordinal);
 		Assert.Contains("-h, --help".PadRight(19) + "     print out all options", output.ToString());

@@ -7,8 +7,11 @@ contracts instead of linking to bootstrap internals.
 <details>
 <summary><code>AmafuApplication</code></summary>
 
-Dispatches global flags and the `detect`, `init`, `init-config`, and `reconcile` verbs.
+Dispatches global flags and the `detect`, `list`, `init`, `init-config`, and `reconcile` verbs.
 Returns deterministic process exit codes and resolves no global configuration.
+`list all` prints the saved `~/.config/RAIkeep.json5` document verbatim, without
+provider discovery or filesystem writes. Missing configuration returns exit code
+4 and a diagnostic on stderr; unsupported arguments return exit code 2.
 
 - `Run(string[] args, AmafuRuntime runtime)` — executes one invocation against
   an explicit runtime context.
