@@ -1,10 +1,10 @@
-## 4.5.18
+## 4.6.0
 
-- Release version: `4.5.18`
-- Coordination tag: `v4.5.18`
+- Release version: `4.6.0`
+- Coordination tag: `v4.6.0`
 
 ### Highlights
-- Show the executing machine as "on <machine>" in the CLI banner. Size both decorative rules to the complete heading, including the hostname; preserve bold cyan styling and plain redirected output.
+- Align package versions and dependencies with the coordinated RAIkeep 4.6.0 release; no package-specific behavior change.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.5.18` line.
+- Aligned with RAIkeep synchronized `4.6.0` line.
