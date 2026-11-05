@@ -1,10 +1,10 @@
-## 4.6.0
+## 4.6.1
 
-- Release version: `4.6.0`
-- Coordination tag: `v4.6.0`
+- Release version: `4.6.1`
+- Coordination tag: `v4.6.1`
 
 ### Highlights
-- Align package versions and dependencies with the coordinated RAIkeep 4.6.0 release; no package-specific behavior change.
+- Synchronize package and dependency versions to 4.6.1 for CR070. The new process run-switch API and declared rule-subject exemptions are delivered by OsLibCore and RaiGuard; this component retains its existing behavior.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.6.0` line.
+- Aligned with RAIkeep synchronized `4.6.1` line.
