@@ -1,10 +1,10 @@
-## 4.6.2
+## 4.6.3
 
-- Release version: `4.6.2`
-- Coordination tag: `v4.6.2`
+- Release version: `4.6.3`
+- Coordination tag: `v4.6.3`
 
 ### Highlights
-- Synchronize package metadata and dependencies to the coordinated 4.6.2 candidate; no component-specific behavior change. CR078 and CR081 are delivered by RaiGuard and the pit CLIs/runtime respectively.
+- Synchronize versions and dependencies to 4.6.3; no component-specific behavior change. CR082 is delivered by Python jsonpit/jpit.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.6.2` line.
+- Aligned with RAIkeep synchronized `4.6.3` line.
