@@ -1,10 +1,10 @@
-## 4.6.3
+## 4.6.4
 
-- Release version: `4.6.3`
-- Coordination tag: `v4.6.3`
+- Release version: `4.6.4`
+- Coordination tag: `v4.6.4`
 
 ### Highlights
-- Synchronize versions and dependencies to 4.6.3; no component-specific behavior change. CR082 is delivered by Python jsonpit/jpit.
+- Updates coordinated package versions for the 4.6.4 suite.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.6.3` line.
+- Aligned with RAIkeep synchronized `4.6.4` line.
