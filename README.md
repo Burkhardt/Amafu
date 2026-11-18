@@ -1,5 +1,7 @@
 # Amafu (`amafu`)
 
+[Code signing policy](https://github.com/Burkhardt/RAIkeep/blob/main/README_codesigning.md)
+
 Amafu finds locally synchronized cloud-storage roots and writes the shared
 `~/.config/RAIkeep.json5` configuration used by RAIkeep command-line tools. It
 can also create stable shortcuts under `~/.CloudStorage/`, avoiding vendor-managed
