@@ -1,6 +1,6 @@
 # Amafu (`amafu`)
 
-[Code signing policy](https://github.com/Burkhardt/RAIkeep/blob/main/README_codesigning.md)
+[Code signing policy](https://github.com/Burkhardt/RAIkeep/blob/main/README_codesigning.md) · SignPath Foundation application in preparation; signing is not yet active.
 
 Amafu finds locally synchronized cloud-storage roots and writes the shared
 `~/.config/RAIkeep.json5` configuration used by RAIkeep command-line tools. It
@@ -9,11 +9,11 @@ macOS paths such as `~/Library/CloudStorage/GoogleDrive-…/My Drive/`.
 
 Cloud detection is supported on macOS and Linux. Commands do not move cloud data.
 
-## Amafu v4.6.5
+## Amafu v4.6.6
 
 Show the executing machine as "on <machine>" in the CLI banner. Size both decorative rules to the complete heading, including the hostname; preserve bold cyan styling and plain redirected output.
 
-Latest release notes: [Amafu 4.6.5 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#465).
+Latest release notes: [Amafu 4.6.6 release notes](https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/Amafu_RELEASE_NOTES_4.x.md#466).
 
 ## Previous Versions
 
@@ -30,7 +30,7 @@ Installs the matching macOS or Linux native release binary in `/usr/local/bin`.
 It requires `curl`, `unzip`, and administrator permission.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.6.5
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- native 4.6.6
 ```
 
 ### .NET global tool
@@ -39,7 +39,7 @@ Installs the Amafu tool for the current user in the normal .NET global-tools
 location. Use this when that directory is already on your `PATH`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.6.5
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | bash -s -- global 4.6.6
 ```
 
 ### .NET tool in `/usr/local/bin`
@@ -48,7 +48,7 @@ Installs the Amafu tool in `/usr/local/bin`, avoiding a per-user tool directory
 on `PATH`. It requires .NET and administrator permission.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.6.5
+curl -fsSL https://raw.githubusercontent.com/Burkhardt/RAIkeep/main/scripts/InstallAmafu.sh | sudo bash -s -- system 4.6.6
 ```
 
 Do not run `amafu` itself with `sudo`; it should use the ordinary user's cloud
