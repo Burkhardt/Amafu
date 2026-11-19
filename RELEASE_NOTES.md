@@ -1,10 +1,10 @@
-## 4.6.6
+## 4.6.7
 
-- Release version: `4.6.6`
-- Coordination tag: `v4.6.6`
+- Release version: `4.6.7`
+- Coordination tag: `v4.6.7`
 
 ### Highlights
-- Publish a visible SignPath Foundation application notice and link the suite code-signing policy from the package README. Signing is planned and is not activated by this release.
+- Remove withdrawn signing-application notices and policy links from package documentation. No runtime behavior change.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.6.6` line.
+- Aligned with RAIkeep synchronized `4.6.7` line.
