@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI003
 namespace Amafu.Tests;
 
 internal static class TestRuntime
@@ -21,3 +23,4 @@ internal static class TestRuntime
 		error ?? new StringWriter(),
 		linuxServerDataDirectory ?? Path.Combine(home, "srv", "ServerData"));
 }
+#pragma warning restore RAI003

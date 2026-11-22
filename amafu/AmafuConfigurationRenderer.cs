@@ -54,10 +54,18 @@ internal static class AmafuConfigurationRenderer
 		return builder.ToString();
 	}
 
-	internal static string RenderDetectionJson(CloudDetectionResult result, string homeDirectory)
+	private static string JsonString(string? value) => value is null ? "null" : "\"" + Escape(value) + "\"";
+
+	internal static string RenderDetectionJson(CloudDetectionResult result, string homeDirectory, CloudRoleReport? roles = null)
 	{
 		var builder = new StringBuilder();
 		builder.AppendLine("{");
+		if (roles is not null)
+		{
+			builder.AppendLine("  \"LiveCloud\": " + JsonString(roles.LiveCloud) + ",");
+			builder.AppendLine("  \"TestCloud\": " + JsonString(roles.TestCloud) + ",");
+			builder.AppendLine("  \"warnings\": " + ("[" + string.Join(",", roles.Warnings.Select(JsonString)) + "]") + ",");
+		}
 		builder.AppendLine("  \"providers\": [");
 		for (var index = 0; index < result.Providers.Count; index++)
 		{

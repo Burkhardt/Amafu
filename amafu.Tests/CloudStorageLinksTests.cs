@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI001, RAI002, RAI003
 namespace Amafu.Tests;
 
 public sealed class CloudStorageLinksTests
@@ -72,3 +74,4 @@ public sealed class CloudStorageLinksTests
 		Assert.Empty(Directory.EnumerateFileSystemEntries(other));
 	}
 }
+#pragma warning restore RAI001, RAI002, RAI003

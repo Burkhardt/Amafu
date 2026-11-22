@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI001, RAI002, RAI003
 using OsLib;
 
 namespace Amafu.Tests;
@@ -188,3 +190,4 @@ public sealed class ConfigurationListingTests
 		Assert.Equal(entries, Directory.GetFileSystemEntries(home.FullPath, "*", SearchOption.AllDirectories));
 	}
 }
+#pragma warning restore RAI001, RAI002, RAI003

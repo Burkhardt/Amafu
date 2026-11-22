@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI001, RAI002, RAI003
 namespace Amafu.Tests;
 
 public sealed class ReconciliationTests
@@ -121,3 +123,4 @@ public sealed class ReconciliationTests
 		Assert.Throws<IOException>(() => new ConfigurationDocument("{Cloud:{},Cloud:{}}"));
 	}
 }
+#pragma warning restore RAI001, RAI002, RAI003

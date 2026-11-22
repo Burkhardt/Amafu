@@ -31,6 +31,8 @@ internal sealed class ConfigurationDocument
 		return result;
 	}
 
+	internal string? OptionalSetting(string key) => root.Properties!.ContainsKey(key) ? Setting(key) : null;
+
 	internal string Setting(string key) => String(Required(key), key);
 
 	internal IReadOnlyList<string> Order(bool required = true)

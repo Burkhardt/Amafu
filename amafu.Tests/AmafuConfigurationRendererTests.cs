@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI003
 using System.Text.Json;
 
 namespace Amafu.Tests;
@@ -64,3 +66,4 @@ public sealed class AmafuConfigurationRendererTests
 		Assert.Equal("~/OneDriveData/", json.RootElement.GetProperty("providers")[0].GetProperty("path").GetString());
 	}
 }
+#pragma warning restore RAI003

@@ -26,8 +26,8 @@ internal static class CliHelp
 			WriteSyntax(output, "amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]");
 			WriteRows(output, width,
 				[("--apply", OutputIcon.ToString(), "back up configuration, create shortcuts, and apply the previewed changes"),
-				 ("--dry-run", OutputIcon.ToString(), "preview only (the default); never prompt interactively"),
-				 ("--onedrive-personal", FolderIcon.ToString(), "select a detected personal OneDrive folder by name or path")]);
+					("--dry-run", OutputIcon.ToString(), "preview only (the default); never prompt interactively"),
+					("--onedrive-personal", FolderIcon.ToString(), "select a detected personal OneDrive folder by name or path")]);
 			return;
 		}
 
@@ -37,9 +37,9 @@ internal static class CliHelp
 			output.WriteLine();
 			WriteRows(output, width,
 				[("--json", OutputIcon.ToString(), "print detected roots as JSON"),
-				 ("--dry-run", OutputIcon.ToString(), "preview detection without creating shortcuts"),
-				 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
-				 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts")]);
+					("--dry-run", OutputIcon.ToString(), "preview detection without creating shortcuts"),
+					("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
+					("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts")]);
 			return;
 		}
 
@@ -50,30 +50,30 @@ internal static class CliHelp
 			output.WriteLine();
 			WriteRows(output, width,
 				[("-f, --force", ForceIcon.ToString(), "overwrite an existing configuration"),
-				 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
-				 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts"),
-				 ("--dry-run", OutputIcon.ToString(), "print configuration without creating files or shortcuts")]);
+					("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
+					("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts"),
+					("--dry-run", OutputIcon.ToString(), "print configuration without creating files or shortcuts")]);
 			return;
 		}
 
 		WriteRows(output, width,
 			[("Commands:", InfoIcon.ToString(), "detect, list, init, reconcile"),
-			 ("  amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
-			 ("  amafu list temp", string.Empty, string.Empty),
-			 ("  amafu list backup", string.Empty, string.Empty),
-			 ("  amafu list order <provider|all>", string.Empty, string.Empty),
-			 ("  amafu list cloud <provider|all>", string.Empty, string.Empty),
-			 ("  amafu list observer <name|all>", string.Empty, string.Empty),
-			 ("  amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]", string.Empty, string.Empty),
-			 ("  amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
-			 ("-h, --help", HelpIcon.ToString(), "print out all options"),
-			 ("-v, --version", InfoIcon.ToString(), "print version info"),
-			 ("-n, --nologo", BannerIcon.ToString(), "do not display the banner"),
-			 ("-f, --force", ForceIcon.ToString(), "overwrite an existing configuration"),
-			 ("--dry-run", OutputIcon.ToString(), "preview detection or configuration without writing"),
-			 ("--json", OutputIcon.ToString(), "print machine-readable cloud detection"),
-			 ("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
-			 ("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts")]);
+				("  amafu detect [--json] [--create-links] [--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
+				("  amafu list temp", string.Empty, string.Empty),
+				("  amafu list backup", string.Empty, string.Empty),
+				("  amafu list order <provider|all>", string.Empty, string.Empty),
+				("  amafu list cloud <provider|all>", string.Empty, string.Empty),
+				("  amafu list observer <name|all>", string.Empty, string.Empty),
+				("  amafu init [--dry-run] [-f|--force] [--create-links] [--onedrive-personal <folder>]", string.Empty, string.Empty),
+				("  amafu reconcile [--apply|--dry-run] [--onedrive-personal <folder>]", string.Empty, string.Empty),
+				("-h, --help", HelpIcon.ToString(), "print out all options"),
+				("-v, --version", InfoIcon.ToString(), "print version info"),
+				("-n, --nologo", BannerIcon.ToString(), "do not display the banner"),
+				("-f, --force", ForceIcon.ToString(), "overwrite an existing configuration"),
+				("--dry-run", OutputIcon.ToString(), "preview detection or configuration without writing"),
+				("--json", OutputIcon.ToString(), "print machine-readable cloud detection"),
+				("--onedrive-personal", FolderIcon.ToString(), "select a personal OneDrive folder; default keeps the configured root, otherwise longest name wins"),
+				("--create-links", FolderIcon.ToString(), "create ~/.CloudStorage/<provider> shortcuts")]);
 	}
 
 	private static void WriteListHelp(TextWriter output, int width, string? selector)
@@ -84,7 +84,7 @@ internal static class CliHelp
 			WriteSyntax(output, $"amafu list {selector}");
 			WriteRows(output, width,
 				[(key, FolderIcon.ToString(), "print the configured absolute directory path with a trailing separator; expand ~ to the current user's home"),
-				 ("Example", InfoIcon.ToString(), $"'amafu list {selector}' prints only the path and a newline")]);
+					("Example", InfoIcon.ToString(), $"'amafu list {selector}' prints only the path and a newline")]);
 			return;
 		}
 		if (selector == "order")
@@ -92,8 +92,8 @@ internal static class CliHelp
 			WriteSyntax(output, "amafu list order <provider|all>");
 			WriteRows(output, width,
 				[("<provider>", InfoIcon.ToString(), "print its 1-based position in DefaultCloudOrder; print 0 when the provider is not in the configured order"),
-				 ("all", FolderIcon.ToString(), "list badged provider names in their configured order"),
-				 ("Example", InfoIcon.ToString(), "'amafu list order all' shows the ordered collection; a named lookup prints only its number and a newline")]);
+					("all", FolderIcon.ToString(), "list badged provider names in their configured order"),
+					("Example", InfoIcon.ToString(), "'amafu list order all' shows the ordered collection; a named lookup prints only its number and a newline")]);
 			return;
 		}
 		if (selector == "cloud")
@@ -101,8 +101,8 @@ internal static class CliHelp
 			WriteSyntax(output, "amafu list cloud <provider|all>");
 			WriteRows(output, width,
 				[("<provider>", FolderIcon.ToString(), "print only its configured absolute directory path; expand ~ and retain a trailing separator"),
-				 ("all", FolderIcon.ToString(), "list each provider badge at the left margin, then its double-quoted path on a new line with one leading tab"),
-				 ("Example", InfoIcon.ToString(), "'amafu list cloud all' shows every configured cloud without checking or creating directories")]);
+					("all", FolderIcon.ToString(), "list each provider badge at the left margin, then its double-quoted path on a new line with one leading tab"),
+					("Example", InfoIcon.ToString(), "'amafu list cloud all' shows every configured cloud without checking or creating directories")]);
 			return;
 		}
 		if (selector == "observer")
@@ -110,18 +110,18 @@ internal static class CliHelp
 			WriteSyntax(output, "amafu list observer <name|all>");
 			WriteRows(output, width,
 				[("<name>", InfoIcon.ToString(), "print only the configured SSH target and a newline; never connect to the observer"),
-				 ("all", InfoIcon.ToString(), "list configured observer names and SSH targets in space-aligned columns"),
-				 ("Example", InfoIcon.ToString(), "'amafu list observer Mzansi' prints the configured target, for example 'rsb@Mzansi'")]);
+					("all", InfoIcon.ToString(), "list configured observer names and SSH targets in space-aligned columns"),
+					("Example", InfoIcon.ToString(), "'amafu list observer Mzansi' prints the configured target, for example 'rsb@Mzansi'")]);
 			return;
 		}
 		WriteSyntax(output, "amafu list <temp|backup|order|cloud|observer>");
 		WriteRows(output, width,
 			[("temp", FolderIcon.ToString(), "print the expanded TempDir path"),
-			 ("backup", FolderIcon.ToString(), "print the expanded LocalBackupDir path"),
-			 ("order <provider|all>", InfoIcon.ToString(), "print a 1-based position (0 if unlisted), or the ordered provider collection"),
-			 ("cloud <provider|all>", FolderIcon.ToString(), "print a configured path, or the provider/path table"),
-			 ("observer <name|all>", InfoIcon.ToString(), "print an SSH target, or the observer/target table"),
-			 ("-h, --help", HelpIcon.ToString(), "use 'amafu list order -h', or another selector, for detailed help")]);
+				("backup", FolderIcon.ToString(), "print the expanded LocalBackupDir path"),
+				("order <provider|all>", InfoIcon.ToString(), "print a 1-based position (0 if unlisted), or the ordered provider collection"),
+				("cloud <provider|all>", FolderIcon.ToString(), "print a configured path, or the provider/path table"),
+				("observer <name|all>", InfoIcon.ToString(), "print an SSH target, or the observer/target table"),
+				("-h, --help", HelpIcon.ToString(), "use 'amafu list order -h', or another selector, for detailed help")]);
 	}
 
 	private static void WriteSyntax(TextWriter output, string text)

@@ -70,11 +70,16 @@ internal static class AmafuApplication
 			}
 		}
 
+		var roles = CloudRoleReport.Read(runtime);
+		foreach (var warning in roles.Warnings) runtime.Error.WriteLine($"Warning: {warning}");
 		if (Contains(args, "--json"))
 		{
-			runtime.Output.Write(AmafuConfigurationRenderer.RenderDetectionJson(result, runtime.HomeDirectory));
+			runtime.Output.Write(AmafuConfigurationRenderer.RenderDetectionJson(result, runtime.HomeDirectory, roles));
 			return 0;
 		}
+
+		runtime.Output.WriteLine($"LiveCloud: {roles.LiveCloud ?? "(unset)"}");
+		runtime.Output.WriteLine($"TestCloud: {roles.TestCloud ?? "(unset)"}");
 
 		if (result.Providers.Count == 0)
 		{

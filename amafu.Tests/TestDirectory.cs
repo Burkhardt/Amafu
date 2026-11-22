@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI001, RAI003
 namespace Amafu.Tests;
 
 internal sealed class TestDirectory : IDisposable
@@ -22,3 +24,4 @@ internal sealed class TestDirectory : IDisposable
 		if (Directory.Exists(FullPath)) Directory.Delete(FullPath, recursive: true);
 	}
 }
+#pragma warning restore RAI001, RAI003

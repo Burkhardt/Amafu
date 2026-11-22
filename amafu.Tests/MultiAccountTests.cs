@@ -1,3 +1,5 @@
+// Exercise the standalone bootstrap against an isolated filesystem before OsLib configuration exists.
+#pragma warning disable RAI001, RAI002, RAI003
 using System.Text.Json;
 
 namespace Amafu.Tests;
@@ -105,3 +107,4 @@ public sealed class MultiAccountTests
 		Assert.Contains("Cannot derive", error.ToString());
 	}
 }
+#pragma warning restore RAI001, RAI002, RAI003
