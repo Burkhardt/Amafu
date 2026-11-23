@@ -62,7 +62,7 @@ public sealed class AmafuApplicationTests
 		var exitCode = AmafuApplication.Run([flag], TestRuntime.Create(fixture.FullPath, output: output));
 
 		Assert.Equal(0, exitCode);
-		Assert.Equal("amafu v4.7.0", output.ToString().Trim());
+		Assert.Equal("amafu v4.7.1", output.ToString().Trim());
 	}
 
 	[Fact]

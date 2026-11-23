@@ -1,10 +1,10 @@
-## 4.7.0
+## 4.7.1
 
-- Release version: `4.7.0`
-- Coordination tag: `v4.7.0`
+- Release version: `4.7.1`
+- Coordination tag: `v4.7.1`
 
 ### Highlights
-- Report live and test cloud roles while checking that Amafu builds independently.
+- Coordinated release; no package-local behavior change.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.7.0` line.
+- Aligned with RAIkeep synchronized `4.7.1` line.
