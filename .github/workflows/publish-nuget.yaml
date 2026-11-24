@@ -34,7 +34,7 @@ jobs:
         run: dotnet restore Amafu.slnx
 
       - name: Check standalone dependencies
-        run: python3 scripts/check-standalone.py
+        run: python3 scripts/check-standalone.py --include-tests
 
       - name: Build
         run: dotnet build Amafu.slnx --configuration Release --no-restore
