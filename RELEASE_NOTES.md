@@ -1,10 +1,10 @@
-## 4.7.2
+## 4.7.3
 
-- Release version: `4.7.2`
-- Coordination tag: `v4.7.2`
+- Release version: `4.7.3`
+- Coordination tag: `v4.7.3`
 
 ### Highlights
-- Keep the executable and its tests independent of RaiGuard. Verify both restored dependency graphs in CI.
+- Amafu joins the coordinated 4.7.3 release.
 
 ### Coordinated Dependencies
-- Aligned with RAIkeep synchronized `4.7.2` line.
+- Aligned with RAIkeep synchronized `4.7.3` line.
